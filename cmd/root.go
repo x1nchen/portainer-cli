@@ -3,8 +3,24 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+
 	"os"
 )
+
+var (
+	// portainer host
+	Host string
+)
+
+
+func init() {
+	// cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringVar(&Host, "host", "", "host base url such as http://localhost:9000")
+
+	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(loginCmd)
+
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "portainer-cli",
