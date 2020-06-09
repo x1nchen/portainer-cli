@@ -27,7 +27,9 @@ var loginCmd = &cobra.Command{
 	Run: login,
 }
 
+
 func login(cmd *cobra.Command, args []string) {
+	// TODO module abstraction
 	portainerCfg := &portainer.Configuration{
 		BasePath:      fmt.Sprintf("%s/api", Host),
 	}
@@ -41,5 +43,6 @@ func login(cmd *cobra.Command, args []string) {
 		cmd.PrintErr("login failed", err)
 		return
 	}
+	// TODO jwt token store into boltdb
 	cmd.Printf("login success, jwt token %s\n", res.Jwt)
 }
