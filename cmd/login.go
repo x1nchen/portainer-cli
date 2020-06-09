@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
+	"github.com/eleztian/portainer"
+	"github.com/eleztian/portainer/model"
 	"github.com/spf13/cobra"
 )
 
@@ -24,5 +28,18 @@ var loginCmd = &cobra.Command{
 }
 
 func login(cmd *cobra.Command, args []string) {
-	
+	portainerCfg := &portainer.Configuration{
+		BasePath:      fmt.Sprintf("%s/api", Host),
+	}
+	pclient := portainer.NewAPIClient(portainerCfg)
+	req := model.AuthenticateUserRequest{
+		Username: User,
+		Password: Password,
+	}
+	res, _, err := pclient.AuthApi.AuthenticateUser(context.TODO(), req)
+	if err != nil {
+		cmd.PrintErr("login failed", err)
+		return
+	}
+	cmd.Printf("login success, jwt token %s\n", res.Jwt)
 }
