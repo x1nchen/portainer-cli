@@ -1,0 +1,4 @@
+bin/*
+log/*
+.idea
+.coverage.txt
