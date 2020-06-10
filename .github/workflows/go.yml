@@ -28,7 +28,7 @@ jobs:
 
       - name: Notify
         uses: yanzay/notify-telegram@v0.1.0
-        if: always()
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         with:
           chat: ${{ secrets.telegram_userid }} # user id or channel name secret
           token: ${{ secrets.telegram_bot_token }} # token secret
