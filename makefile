@@ -3,8 +3,6 @@ GOGET := $(GO) get
 BUILD := ${GO} build ${GOFLAGS}
 BIN := portainer-cli
 GOBUILD := ${BUILD} -o ./bin/${BIN} ./main.go
-GO_BUILD_IMAGE := dockerhub.followme-internal.com/library/golang-builder:alpine
-IMAGE_NAME := dockerhub.followme-internal.com/nirvana/$(BIN)
 PACKAGE_TEST := $(shell go list ./...|grep -v /test/integration/ | grep -v /test/e2e/)
 PACKAGE_LIST  := go list ./...
 PACKAGE_DIRECTORIES := $(PACKAGE_LIST)
@@ -39,9 +37,6 @@ fmt:
 build:
 	mkdir -p bin
 	${GOBUILD}
-
-run-dev: build
-	./bin/trade-api --registry_address=192.168.8.6:8500
 
 
 .PHONY: test-unit
