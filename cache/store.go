@@ -72,13 +72,10 @@ func (b *bboltStore) get(key string) ([]byte, error) {
 	var result []byte
 	var err error
 	err = b.bdb.View(func(tx *bolt.Tx) error {
-		bucket, ierr := tx.CreateBucketIfNotExists([]byte(b.host))
-		if ierr != nil {
-			return perr.WithMessage(err, "create bucket")
-		}
+		buc := tx.Bucket(StringToBytes(b.host))
 
 		// 将 key-value 写入到 bucket 中
-		result = bucket.Get(StringToBytes(key))
+		result = buc.Get(StringToBytes(key))
 		return nil
 	})
 

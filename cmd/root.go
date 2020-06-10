@@ -39,7 +39,6 @@ func Execute() {
 }
 
 func prepare(cmd *cobra.Command, args []string) error {
-
-	initController()
+	return nil
 }
 

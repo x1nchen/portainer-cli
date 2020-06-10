@@ -56,3 +56,12 @@ func (s *BoltStoreTestSuite) TestSaveToken() {
 	err := s.bs.SaveToken("testjwttoken")
 	s.NoError(err)
 }
+
+func (s *BoltStoreTestSuite) TestGetToken() {
+	err := s.bs.SaveToken("testjwttoken")
+	s.NoError(err)
+
+	t, err := s.bs.GetToken()
+	s.NoError(err)
+	s.Equal("testjwttoken", t)
+}
