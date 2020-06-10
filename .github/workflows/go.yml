@@ -4,6 +4,9 @@ jobs:
   build:
     strategy:
       fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+      runs-on: ${{ matrix.os }}
 
     steps:
       - name: Set up Go 1.14
@@ -22,3 +25,11 @@ jobs:
 
       - name: Build
         run: make build
+
+      - name: Notify
+      - uses: yanzay/notify-telegram@v0.1.0
+          if: always()
+          with:
+            chat: ${{ secrets.telegram_userid }} # user id or channel name secret
+            token: ${{ secrets.telegram_bot_token }} # token secret
+            status: ${{ job.status }} # do not modify this line
