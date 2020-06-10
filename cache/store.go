@@ -18,6 +18,7 @@ type Store interface {
 	SaveToken(token string) error
 	// 获取用户 token
 	GetToken() (string, error)
+	// 移除当前 host 下所有数据
 	RemoveAllData() error
 	Close() error
 }
@@ -46,7 +47,7 @@ func NewBoltStore(datadir string, host string) (Store, error) {
 func (b *bboltStore) SaveToken(token string) error {
 	return b.bdb.Update(func(tx *bolt.Tx) error {
 		// 如果 bucket 不存在则，创建一个 bucket
-		bucket, err := tx.CreateBucketIfNotExists([]byte(b.host))
+		bucket, err := tx.CreateBucketIfNotExists(StringToBytesUnsafe(b.host))
 		if err != nil {
 			return perr.WithMessage(err, "create bucket")
 		}

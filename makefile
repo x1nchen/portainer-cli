@@ -46,6 +46,7 @@ run-dev: build
 
 .PHONY: test-unit
 test-unit:
+	# go test -race -v $(PACKAGE_TEST) -coverprofile .coverage.txt
 	go test -v $(PACKAGE_TEST) -coverprofile .coverage.txt
 	go tool cover -func .coverage.txt
 
