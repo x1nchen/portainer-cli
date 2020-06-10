@@ -6,7 +6,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
-      runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Set up Go 1.14
