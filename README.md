@@ -1,3 +1,4 @@
+![Tests](https://github.com/x1nchen/portainer-cli/workflows/Tests/badge.svg?branch=master)
 # Portainer CLI
 
 
