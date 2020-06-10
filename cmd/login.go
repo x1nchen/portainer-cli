@@ -24,7 +24,7 @@ var loginCmd = &cobra.Command{
 	Short: "login to get the auth token",
 	// TODO
 	Long:  ``,
-	Run: login,
+	RunE: controller.Login,
 }
 
 

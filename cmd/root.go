@@ -19,15 +19,16 @@ func init() {
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(loginCmd)
+	rootCmd.AddCommand(configCmd)
 }
 
 var rootCmd = &cobra.Command{
 	Use:   "portainer-cli",
-	Short: "portainer-cli is a tool for interacte with portainer",
-	Long: ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
+	Short: "Portainer CLI",
+	Long: `Work seamlessly with Portainer from the command line.`,
+	PreRunE: prepare,
+	SilenceErrors: true,
+	SilenceUsage:  true,
 }
 
 func Execute() {
@@ -36,3 +37,9 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
+func prepare(cmd *cobra.Command, args []string) error {
+
+	initController()
+}
+
