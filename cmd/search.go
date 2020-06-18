@@ -20,7 +20,13 @@ var searchCmd = &cobra.Command{
 	RunE:    search,
 }
 
+// STEP
+// 1. fuzzy match the container name or image name?
+// 2. search from cache(boltdb) with step 1
+// 3. verify the container from cache by call docker api
+// 4. show container name and node name with list formation
 func search(cmd *cobra.Command, args []string) error {
+	//
 	res, err := manager.pclient.ListContainer(context.Background(), 78)
 	if err != nil {
 		cmd.PrintErr(err)
