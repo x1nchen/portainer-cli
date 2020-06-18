@@ -37,6 +37,12 @@ Use "portainer-cli [command] --help" for more information about a command.
 
 `portainer-cli` is available via Homebrew
 
+#### go
+
+```bash
+GO111MODULE="on" go get -v github.com/x1nchen/portainer-cli
+```
+
 #### Homebrew
 
 Install: `brew install github/x1nchen/portainer-cli`
