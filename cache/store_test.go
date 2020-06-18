@@ -1,11 +1,12 @@
 package cache
 
 import (
+	"testing"
+	"time"
+
 	perr "github.com/pkg/errors"
 	"github.com/stretchr/testify/suite"
 	bolt "go.etcd.io/bbolt"
-	"testing"
-	"time"
 )
 
 type BoltStoreTestSuite struct {
@@ -38,7 +39,7 @@ func (s *BoltStoreTestSuite) TearDownTest() {
 	s.NoError(err)
 }
 
-func newTestBoltStore() (*bboltStore, error){
+func newTestBoltStore() (*bboltStore, error) {
 	db, err := bolt.Open("test.db", 0600,
 		&bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {

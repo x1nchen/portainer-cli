@@ -1,15 +1,11 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"github.com/eleztian/portainer"
-	"github.com/eleztian/portainer/model"
 	"github.com/spf13/cobra"
 )
 
 var (
-	User string
+	User     string
 	Password string
 )
 
@@ -20,29 +16,20 @@ func init() {
 
 // 登录
 var loginCmd = &cobra.Command{
-	Use:   "login",
-	Short: "login to get the auth token",
-	// TODO
-	Long:  ``,
-	RunE: controller.Login,
+	Use:     "login",
+	Short:   "login to get the auth token",
+	PreRunE: initUnauthorizedManager,
+	Long:    ``,
+	RunE:    login,
 }
 
-
-func login(cmd *cobra.Command, args []string) {
-	// TODO module abstraction
-	portainerCfg := &portainer.Configuration{
-		BasePath:      fmt.Sprintf("%s/api", Host),
-	}
-	pclient := portainer.NewAPIClient(portainerCfg)
-	req := model.AuthenticateUserRequest{
-		Username: User,
-		Password: Password,
-	}
-	res, _, err := pclient.AuthApi.AuthenticateUser(context.TODO(), req)
+func login(cmd *cobra.Command, args []string) error {
+	err := manager.Login(User, Password)
 	if err != nil {
 		cmd.PrintErr("login failed", err)
-		return
+		return err
 	}
-	// TODO jwt token store into boltdb
-	cmd.Printf("login success, jwt token %s\n", res.Jwt)
+
+	cmd.Printf("login success\n")
+	return err
 }
