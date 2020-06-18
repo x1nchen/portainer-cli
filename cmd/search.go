@@ -26,6 +26,9 @@ func search(cmd *cobra.Command, args []string) error {
 		cmd.PrintErr(err)
 		return err
 	}
-	cmd.Println(res)
+	for _, r := range res {
+		// strip the heading "/"
+		cmd.Println(r.Names[0][1:], r.Image, r.Status)
+	}
 	return err
 }
