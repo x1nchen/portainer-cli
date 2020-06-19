@@ -74,7 +74,6 @@ func TestBytesToStringUnsafe(t *testing.T) {
 	}
 }
 
-
 func TestStringToBytesUnsafe(t *testing.T) {
 	type args struct {
 		s string
@@ -93,6 +92,26 @@ func TestStringToBytesUnsafe(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := StringToBytesUnsafe(tt.args.s); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("StringToBytes() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMD5Hash(t *testing.T) {
+	type args struct {
+		text string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"#1", args{"https://portainer.com"}, "e69c0762bc1bc9bbbe5e22f102a92da6"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := MD5Hash(tt.args.text); got != tt.want {
+				t.Errorf("MD5Hash() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -34,6 +34,10 @@ func NewPortainerClient(host string, jwtToken string) *PortainerClient {
 	}
 }
 
+func (p *PortainerClient) CarryToken(token string) {
+	p.PClient.JwtToken = token
+}
+
 // Auth no need with jwt token
 func (p *PortainerClient) Auth(ctx context.Context, user string, password string) (string, error) {
 	// fmt.Println(user, password)
@@ -60,6 +64,21 @@ func (p *PortainerClient) ListContainer(ctx context.Context, endpointId int) (mo
 		if strings.Contains(strings.ToLower(err.Error()), "invalid credentials") {
 			return res, ErrorAuthFailed
 		}
+		return res, perr.WithMessage(err, "portainer list container")
 	}
+	return res, nil
+}
+
+// ListEndpoint jwt token needed
+func (p *PortainerClient) ListEndpoint(ctx context.Context) (model.EndpointListResponse, error) {
+	res, _, err := p.PClient.EndpointsApi.EndpointList(ctx)
+
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "invalid credentials") {
+			return res, ErrorAuthFailed
+		}
+		return res, perr.WithMessage(err, "portainer list endpoint")
+	}
+
 	return res, nil
 }

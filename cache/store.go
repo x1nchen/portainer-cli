@@ -1,10 +1,12 @@
 package cache
 
 import (
-	perr "github.com/pkg/errors"
-	bolt "go.etcd.io/bbolt"
+	"fmt"
 	"path"
 	"time"
+
+	perr "github.com/pkg/errors"
+	bolt "go.etcd.io/bbolt"
 )
 
 var (
@@ -31,7 +33,9 @@ type bboltStore struct {
 }
 
 func NewBoltStore(datadir string, host string) (Store, error) {
-	db, err := bolt.Open(path.Join(datadir, "portainer.db"), 0600,
+	dbNamePrefix := MD5Hash(host)
+	dbName := fmt.Sprintf("%s.db", dbNamePrefix)
+	db, err := bolt.Open(path.Join(datadir, dbName), 0600,
 		&bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, perr.WithMessage(err, "open local db")
