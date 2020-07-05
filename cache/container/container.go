@@ -45,38 +45,38 @@ func (service *Service) GetContain(ID int) (*model.DockerContainer, error) {
 }
 
 // UpdateEndpoint updates an endpoint.
-func (service *Service) UpdateEndpoint(ID int, endpoint *model.Endpoint) error {
+func (service *Service) UpdateContainer(ID int, endpoint *model.Endpoint) error {
 	identifier := internal.Itob(int(ID))
 	return internal.UpdateObject(service.db, BucketName, identifier, endpoint)
 }
 
 // DeleteEndpoint deletes an endpoint.
-func (service *Service) DeleteEndpoint(ID int) error {
+func (service *Service) DeleteContainer(ID int) error {
 	identifier := internal.Itob(int(ID))
 	return internal.DeleteObject(service.db, BucketName, identifier)
 }
 
 // Endpoints return an array containing all the endpoints.
-func (service *Service) Endpoints() ([]model.Endpoint, error) {
-	var endpoints = make([]model.Endpoint, 0)
+func (service *Service) FuzzyFindContainerByName(name string) ([]climodel.ContainerExtend, error) {
+	var containers = make([]climodel.ContainerExtend, 0)
 
 	err := service.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(BucketName))
-
 		cursor := bucket.Cursor()
-		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
-			var endpoint model.Endpoint
-			err := internal.UnmarshalObjectWithJsoniter(v, &endpoint)
+
+		for k, v := cursor.Seek(internal.StringToBytes(name)); k != nil; k, v = cursor.Next() {
+			var container climodel.ContainerExtend
+			err := internal.UnmarshalObjectWithJsoniter(v, &container)
 			if err != nil {
 				return err
 			}
-			endpoints = append(endpoints, endpoint)
+			containers = append(containers, container)
 		}
 
 		return nil
 	})
 
-	return endpoints, err
+	return containers, err
 }
 
 // GetNextIdentifier returns the next identifier for an endpoint.

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"context"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -26,24 +26,18 @@ var searchCmd = &cobra.Command{
 // 3. verify the container from cache by call docker api
 // 4. show container name and node name with list formation
 func search(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-	//
-	_, err := manager.pclient.ListEndpoint(ctx)
+	fmt.Println(args)
+	name := args[0]
+	fmt.Println(name)
+	containers, err := manager.store.ContainerService.FuzzyFindContainerByName(name)
 	if err != nil {
 		cmd.PrintErr(err)
 		return err
 	}
 
+	for _, container := range containers {
+		cmd.Println(container.Names[0], container.EndpointName)
+	}
 
-	// in
-	res, err := manager.pclient.ListContainer(ctx, 78)
-	if err != nil {
-		cmd.PrintErr(err)
-		return err
-	}
-	for _, r := range res {
-		// strip the heading "/"
-		cmd.Println(r.Names[0][1:], r.Image, r.Status)
-	}
-	return err
+	return nil
 }
