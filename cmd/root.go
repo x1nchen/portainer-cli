@@ -22,7 +22,7 @@ var (
 	// portainer host
 	Host    string
 	Datadir string
-	store   cache.Store
+	store   *cache.Store
 	pclient *client.PortainerClient
 	manager *Manager
 )
@@ -35,6 +35,7 @@ func init() {
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(searchCmd)
+	rootCmd.AddCommand(syncCmd)
 
 	// os.UserHomeDir()
 }
@@ -110,7 +111,7 @@ func initAuthorizedManager(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	token, err := store.GetToken()
+	token, err := store.TokenService.GetToken()
 	if err != nil {
 		return err
 	}

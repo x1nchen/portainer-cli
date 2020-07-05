@@ -26,8 +26,17 @@ var searchCmd = &cobra.Command{
 // 3. verify the container from cache by call docker api
 // 4. show container name and node name with list formation
 func search(cmd *cobra.Command, args []string) error {
+	ctx := context.Background()
 	//
-	res, err := manager.pclient.ListContainer(context.Background(), 78)
+	_, err := manager.pclient.ListEndpoint(ctx)
+	if err != nil {
+		cmd.PrintErr(err)
+		return err
+	}
+
+
+	// in
+	res, err := manager.pclient.ListContainer(ctx, 78)
 	if err != nil {
 		cmd.PrintErr(err)
 		return err
