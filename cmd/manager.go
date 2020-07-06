@@ -76,9 +76,28 @@ func (c *Manager) SyncData() error {
 		// console log
 		fmt.Printf("sync endpoint %s container number %d\n", ep.Name, len(cons))
 	}
+	err = c.store.EndpointService.TruncateDatabase()
+	if err != nil {
+		return err
+	}
+
+	_, err = c.store.EndpointService.CreateDatabase()
+	if err != nil {
+		return err
+	}
 
 	// store endpoints
 	err = c.store.EndpointService.BatchUpdateEndpoints(eps...)
+	if err != nil {
+		return err
+	}
+
+	err = c.store.ContainerService.TruncateDatabase()
+	if err != nil {
+		return err
+	}
+
+	_, err = c.store.ContainerService.CreateDatabase()
 	if err != nil {
 		return err
 	}

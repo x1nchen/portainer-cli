@@ -143,6 +143,25 @@ func (service *Service) BatchUpdateContainers(containers ...climodel.ContainerEx
 }
 
 // GetNextIdentifier returns the next identifier for an endpoint.
+func (service *Service) TruncateDatabase() error {
+	return service.db.Update(func(tx *bolt.Tx) error {
+		return tx.DeleteBucket([]byte(BucketName))
+	})
+}
+
+// GetNextIdentifier returns the next identifier for an endpoint.
+func (service *Service) CreateDatabase() (*bolt.Bucket, error) {
+	var buc *bolt.Bucket
+	var err error
+	err = service.db.Update(func(tx *bolt.Tx) error {
+		buc, err = tx.CreateBucketIfNotExists([]byte(BucketName))
+		return err
+	})
+
+	return buc, err
+}
+
+// GetNextIdentifier returns the next identifier for an endpoint.
 func (service *Service) DB() *bolt.DB {
 	return service.db
 }
