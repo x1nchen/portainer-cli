@@ -1,6 +1,9 @@
 package cmd
 
 import (
+	"fmt"
+
+	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +27,9 @@ var searchCmd = &cobra.Command{
 // 3. verify the container from cache by call docker api
 // 4. show container name and node name with list formation
 func search(cmd *cobra.Command, args []string) error {
+	// TODO make color output flagged
+	au := aurora.NewAurora(true)
+
 	name := args[0]
 	containers, err := manager.store.ContainerService.FuzzyFindContainerByName(name)
 	if err != nil {
@@ -32,7 +38,14 @@ func search(cmd *cobra.Command, args []string) error {
 	}
 
 	for _, container := range containers {
-		cmd.Println(container.Names[0][1:], container.EndpointName, container.State)
+		outMessage := fmt.Sprintf("%s %s %s", container.Names[0][1:], container.EndpointName, container.State)
+		if container.State == "running" { // TODO const
+			cmd.Println(au.Green(outMessage))
+		}
+		if container.State == "exited" { // TODO const
+			cmd.Println(au.Red(outMessage))
+		}
+
 	}
 
 	return nil
