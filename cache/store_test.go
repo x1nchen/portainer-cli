@@ -12,7 +12,7 @@ import (
 
 type BoltStoreTestSuite struct {
 	suite.Suite
-	bs *Store
+	bs  *Store
 	bdb *bolt.DB
 }
 
@@ -38,7 +38,20 @@ func (s *BoltStoreTestSuite) TearDownSuite() {
 
 func (s *BoltStoreTestSuite) TearDownTest() {
 	// 在每次测试后执行移除数据
-	err := s.bs.RemoveAllData()
+	err := s.bdb.Update(func(tx *bolt.Tx) error {
+		// Retrieve the users bucket.
+		// This should be created when the DB is first opened.
+		err := tx.DeleteBucket([]byte("test"))
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	s.NoError(err)
+	err = s.bdb.Close()
 	s.NoError(err)
 }
 
@@ -46,7 +59,7 @@ func newTestBoltStore() (*Store, *bolt.DB, error) {
 	db, err := bolt.Open("test.db", 0600,
 		&bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		return nil, nil ,perr.WithMessage(err, "open local db")
+		return nil, nil, perr.WithMessage(err, "open local db")
 	}
 
 	s := &Store{
@@ -66,12 +79,12 @@ func (s *BoltStoreTestSuite) TestBoltDBSeek() {
 			return err
 		}
 
-		err = b.Put([]byte("zzztest1"),[]byte("test1") )
+		err = b.Put([]byte("zzztest1"), []byte("test1"))
 
 		if err != nil {
 			return err
 		}
-		err = b.Put([]byte("xtest2"),[]byte("test2") )
+		err = b.Put([]byte("xtes"), []byte("test2"))
 		if err != nil {
 			return err
 		}
@@ -80,7 +93,6 @@ func (s *BoltStoreTestSuite) TestBoltDBSeek() {
 	})
 
 	s.NoError(err)
-
 
 	err = s.bdb.View(func(tx *bolt.Tx) error {
 		// Assume bucket exists and has keys
@@ -96,7 +108,6 @@ func (s *BoltStoreTestSuite) TestBoltDBSeek() {
 	})
 
 	s.NoError(err)
-
 
 }
 

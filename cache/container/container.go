@@ -1,6 +1,7 @@
 package container
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/x1nchen/portainer-cli/cache/internal"
@@ -57,6 +58,29 @@ func (service *Service) DeleteContainer(ID int) error {
 }
 
 // Endpoints return an array containing all the endpoints.
+func (service *Service) FindAllContainers() ([]climodel.ContainerExtend, error) {
+	var containers = make([]climodel.ContainerExtend, 0)
+
+	err := service.db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(BucketName))
+
+		cursor := bucket.Cursor()
+		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+			var container climodel.ContainerExtend
+			err := internal.UnmarshalObjectWithJsoniter(v, &container)
+			if err != nil {
+				return err
+			}
+			containers = append(containers, container)
+		}
+
+		return nil
+	})
+
+	return containers, err
+}
+
+// Endpoints return an array containing all the endpoints.
 func (service *Service) FuzzyFindContainerByName(name string) ([]climodel.ContainerExtend, error) {
 	var containers = make([]climodel.ContainerExtend, 0)
 
@@ -64,13 +88,18 @@ func (service *Service) FuzzyFindContainerByName(name string) ([]climodel.Contai
 		bucket := tx.Bucket([]byte(BucketName))
 		cursor := bucket.Cursor()
 
-		for k, v := cursor.Seek(internal.StringToBytes(name)); k != nil; k, v = cursor.Next() {
-			var container climodel.ContainerExtend
-			err := internal.UnmarshalObjectWithJsoniter(v, &container)
-			if err != nil {
-				return err
+		match := internal.StringToBytes(name)
+
+		for k, v := cursor.Seek(match); k != nil; k, v = cursor.Next() {
+			// find by simple byte slice match
+			if bytes.Contains(k, match) {
+				var container climodel.ContainerExtend
+				err := internal.UnmarshalObjectWithJsoniter(v, &container)
+				if err != nil {
+					return err
+				}
+				containers = append(containers, container)
 			}
-			containers = append(containers, container)
 		}
 
 		return nil
@@ -111,4 +140,9 @@ func (service *Service) BatchUpdateContainers(containers ...climodel.ContainerEx
 
 		return nil
 	})
+}
+
+// GetNextIdentifier returns the next identifier for an endpoint.
+func (service *Service) DB() *bolt.DB {
+	return service.db
 }
