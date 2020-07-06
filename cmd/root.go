@@ -81,9 +81,11 @@ func prepare(cmd *cobra.Command, args []string) error {
 // 关闭本地存储
 func cleanup(cmd *cobra.Command, args []string) error {
 	var err error
-	err = store.Close()
-	if err != nil {
-		return perr.WithMessage(err, "close cache store")
+	if store != nil {
+		err = store.Close()
+		if err != nil {
+			return perr.WithMessage(err, "close cache store")
+		}
 	}
 	return nil
 }
