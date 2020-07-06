@@ -90,7 +90,7 @@ func (service *Service) FuzzyFindContainerByName(name string) ([]climodel.Contai
 
 		match := internal.StringToBytes(name)
 
-		for k, v := cursor.Seek(match); k != nil; k, v = cursor.Next() {
+		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
 			// find by simple byte slice match
 			if bytes.Contains(k, match) {
 				var container climodel.ContainerExtend
