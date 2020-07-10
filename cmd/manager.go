@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	climodel "github.com/x1nchen/portainer-cli/model"
 
@@ -75,6 +76,9 @@ func (c *Manager) SyncData() error {
 		}
 		// console log
 		fmt.Printf("sync endpoint %s container number %d\n", ep.Name, len(cons))
+
+		// force interval to avoid 502 error (api rate limit)
+		time.Sleep(500 * time.Millisecond)
 	}
 	err = c.store.EndpointService.TruncateDatabase()
 	if err != nil {
