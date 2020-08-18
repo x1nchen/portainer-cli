@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
+	"time"
 
 	perr "github.com/pkg/errors"
 
@@ -23,8 +25,11 @@ type PortainerClient struct {
 // TODO options style DI
 func NewPortainerClient(host string, jwtToken string) *PortainerClient {
 	portainerCfg := &portainer.Configuration{
-		BasePath: fmt.Sprintf("%s/api", host),
+		BasePath:   fmt.Sprintf("%s/api", host),
+		HTTPClient: http.DefaultClient,
 	}
+
+	portainerCfg.HTTPClient.Timeout = 3 * time.Second
 
 	c := portainer.NewAPIClient(portainerCfg)
 	c.JwtToken = jwtToken
@@ -78,6 +83,19 @@ func (p *PortainerClient) ListEndpoint(ctx context.Context) (model.EndpointListR
 			return res, ErrorAuthFailed
 		}
 		return res, perr.WithMessage(err, "portainer list endpoint")
+	}
+
+	return res, nil
+}
+
+func (p *PortainerClient) GetStatus(ctx context.Context) (model.Status, error) {
+	res, _, err := p.PClient.StatusApi.StatusInspect(ctx)
+
+	if err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "invalid credentials") {
+			return res, ErrorAuthFailed
+		}
+		return res, perr.WithMessage(err, "get portainer status")
 	}
 
 	return res, nil

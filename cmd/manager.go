@@ -64,7 +64,7 @@ func (c *Manager) SyncData() error {
 	for _, ep := range eps {
 		cons, err := c.pclient.ListContainer(ctx, int(ep.Id))
 		if err != nil {
-			return err
+			fmt.Printf("list container [%s] error %v\n", ep.Name, err)
 		}
 
 		for _, con := range cons {
