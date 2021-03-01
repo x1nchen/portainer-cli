@@ -1,6 +1,6 @@
 module github.com/x1nchen/portainer-cli
 
-go 1.14
+go 1.16
 
 require (
 	github.com/json-iterator/go v1.1.10
@@ -11,3 +11,6 @@ require (
 	github.com/x1nchen/portainer v1.23.2
 	go.etcd.io/bbolt v1.3.5
 )
+
+// lint error
+retract v0.0.7

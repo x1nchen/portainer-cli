@@ -40,7 +40,7 @@ func main() {
 		// Assume bucket exists and has keys
 		b := tx.Bucket([]byte("container"))
 
-		b.ForEach(func(k, v []byte) error {
+		_ = b.ForEach(func(k, v []byte) error {
 			// fmt.Printf("key=%s, value=%s\n", k, v)
 			fmt.Printf("key=%s\n", k)
 			return nil

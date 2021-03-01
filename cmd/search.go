@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	climodel "github.com/x1nchen/portainer-cli/model"
 	"strings"
+
+	climodel "github.com/x1nchen/portainer-cli/model"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
@@ -58,7 +59,7 @@ func search(cmd *cobra.Command, args []string) error {
 }
 
 // get the longest field to generate template
-func genOutTemplate(list [] climodel.ContainerExtend) string {
+func genOutTemplate(list []climodel.ContainerExtend) string {
 	var nameLen, tagLen, nodeLen, stateLen, imageLen int
 	for _, v := range list {
 		image := strings.Split(v.Image, ":")

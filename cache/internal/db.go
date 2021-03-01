@@ -122,7 +122,7 @@ func UpdateString(db *bolt.DB, bucketName string, key []byte, value []byte) erro
 func GetNextIdentifier(db *bolt.DB, bucketName string) int {
 	var identifier int
 
-	db.Update(func(tx *bolt.Tx) error {
+	_ = db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(bucketName))
 		id, err := bucket.NextSequence()
 		if err != nil {

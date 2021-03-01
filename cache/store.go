@@ -2,9 +2,10 @@ package cache
 
 import (
 	"fmt"
-	"github.com/x1nchen/portainer-cli/cache/container"
 	"path"
 	"time"
+
+	"github.com/x1nchen/portainer-cli/cache/container"
 
 	"github.com/x1nchen/portainer-cli/cache/internal"
 
@@ -22,10 +23,10 @@ var (
 
 // Store is the data cache for portainer
 type Store struct {
-	host            string // host is for bbolt bucket
-	bdb             *bolt.DB
-	TokenService    *token.Service
-	EndpointService *endpoint.Service
+	host             string // host is for bbolt bucket
+	bdb              *bolt.DB
+	TokenService     *token.Service
+	EndpointService  *endpoint.Service
 	ContainerService *container.Service
 }
 

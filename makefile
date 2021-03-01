@@ -31,7 +31,7 @@ gen-mock:
 .PHONY: fmt
 fmt:
 	@echo "goimports"
-	@goimports -w $(FILES)
+	@goimports -w .
 
 .PHONY: build
 build:
