@@ -38,13 +38,13 @@ func search(cmd *cobra.Command, args []string) error {
 		cmd.PrintErr(err)
 		return err
 	}
-
-	title := fmt.Sprintf(genOutTemplate(containers), "NAME", "TAG", "NODE", "STATE", "IMAGE")
+	template := genOutTemplate(containers)
+	title := fmt.Sprintf(template, "NAME", "TAG", "NODE", "STATE", "IMAGE")
 	cmd.Println(au.White(title))
 	for _, container := range containers {
-		image := strings.Split(container.Image, ":")
-		outMessage := fmt.Sprintf(genOutTemplate(containers), container.Names[0][1:],
-			image[1], container.EndpointName, container.State, image[0])
+		imageName, imageTag := splitImage(container.Image)
+		outMessage := fmt.Sprintf(template, container.Names[0][1:],
+			imageTag, container.EndpointName, container.State, imageName)
 		if container.State == "running" { // TODO const
 			cmd.Println(au.Green(outMessage))
 		}
@@ -61,15 +61,15 @@ func search(cmd *cobra.Command, args []string) error {
 func genOutTemplate(list [] climodel.ContainerExtend) string {
 	var nameLen, tagLen, nodeLen, stateLen, imageLen int
 	for _, v := range list {
-		image := strings.Split(v.Image, ":")
+		imageName, imageTag := splitImage(v.Image)
 		if len(v.Names[0][1:]) > nameLen {
 			nameLen = len(v.Names[0][1:])
 		}
-		if len(image[0]) > imageLen {
-			imageLen = len(image[0])
+		if len(imageName) > imageLen {
+			imageLen = len(imageName)
 		}
-		if len(image[1]) > tagLen {
-			tagLen = len(image[1])
+		if len(imageTag) > tagLen {
+			tagLen = len(imageTag)
 		}
 		if len(v.EndpointName) > nodeLen {
 			nodeLen = len(v.EndpointName)
@@ -85,4 +85,15 @@ func genOutTemplate(list [] climodel.ContainerExtend) string {
 		"%-", stateLen, "s ",
 		"%-", imageLen, "s ",
 	)
+}
+
+func splitImage(name string) (imageName, imageTag string) {
+	image := strings.Split(name, ":")
+	imageName = image[0]
+	if len(image) == 1 {
+		imageTag = "<none>"
+		return
+	}
+	imageTag = image[1]
+	return
 }
