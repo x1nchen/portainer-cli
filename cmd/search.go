@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	climodel "github.com/x1nchen/portainer-cli/model"
+	"strings"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
@@ -37,8 +39,12 @@ func search(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	title := fmt.Sprintf(genOutTemplate(containers), "NAME", "TAG", "NODE", "STATE", "IMAGE")
+	cmd.Println(au.White(title))
 	for _, container := range containers {
-		outMessage := fmt.Sprintf("%s %s %s", container.Names[0][1:], container.EndpointName, container.State)
+		image := strings.Split(container.Image, ":")
+		outMessage := fmt.Sprintf(genOutTemplate(containers), container.Names[0][1:],
+			image[1], container.EndpointName, container.State, image[0])
 		if container.State == "running" { // TODO const
 			cmd.Println(au.Green(outMessage))
 		}
@@ -49,4 +55,34 @@ func search(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
+}
+
+// get the longest field to generate template
+func genOutTemplate(list [] climodel.ContainerExtend) string {
+	var nameLen, tagLen, nodeLen, stateLen, imageLen int
+	for _, v := range list {
+		image := strings.Split(v.Image, ":")
+		if len(v.Names[0][1:]) > nameLen {
+			nameLen = len(v.Names[0][1:])
+		}
+		if len(image[0]) > imageLen {
+			imageLen = len(image[0])
+		}
+		if len(image[1]) > tagLen {
+			tagLen = len(image[1])
+		}
+		if len(v.EndpointName) > nodeLen {
+			nodeLen = len(v.EndpointName)
+		}
+		if len(v.State) > stateLen {
+			stateLen = len(v.State)
+		}
+	}
+	return fmt.Sprint(
+		"%-", nameLen, "s ",
+		"%-", tagLen, "s ",
+		"%-", nodeLen, "s ",
+		"%-", stateLen, "s ",
+		"%-", imageLen, "s ",
+	)
 }
