@@ -7,8 +7,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/docker/docker/api/types/network"
 	"github.com/spf13/cobra"
 	clierr "github.com/x1nchen/portainer-cli/err"
+	"github.com/x1nchen/portainer/model"
 )
 
 func init() {}
@@ -37,6 +39,10 @@ func deploy(cmd *cobra.Command, args []string) error {
 		cmd.PrintErr(err)
 		return err
 	}
+	if len(containers) == 0 {
+		cmd.PrintErrf("%s service not found\n", name)
+		return errors.New("service not found")
+	}
 
 	// TODO should sync the container in current endpoint instance before try upgrade
 	if len(containers) > 1 {
@@ -46,7 +52,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 
 	container := containers[0]
 	// 1 inspect container
-	containerJSON, _, err := manager.pclient.PClient.DockerApi.InspectContainer(
+	containerDetail, _, err := manager.pclient.PClient.DockerApi.InspectContainer(
 		ctx,
 		int32(container.EndpointId),
 		container.ID,
@@ -102,13 +108,19 @@ func deploy(cmd *cobra.Command, args []string) error {
 	}
 	cmd.Println("delete container success ", container.ID)
 
-	containerJSON.Image = targetFullImageName
+	containerConfig := model.ContainerConfigWrapper{
+		Config:           containerDetail.Config,
+		HostConfig:       containerDetail.HostConfig,
+		NetworkingConfig: &network.NetworkingConfig{EndpointsConfig: containerDetail.NetworkSettings.Networks},
+	}
+
+	containerDetail.Image = targetFullImageName
 	// 4 create container
 	newContainer, _, err := manager.pclient.PClient.DockerApi.CreateContainer(
 		ctx,
 		int32(container.EndpointId),
-		containerJSON.Name,
-		containerJSON)
+		containerDetail.Name,
+		containerConfig)
 
 	if err != nil {
 		cmd.PrintErr(err)

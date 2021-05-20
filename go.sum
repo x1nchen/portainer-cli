@@ -371,6 +371,8 @@ github.com/x1nchen/portainer v1.23.6 h1:ndCUALRz+0GZyv+QYSF4gTSUP38/F8eRO/+Ybng/
 github.com/x1nchen/portainer v1.23.6/go.mod h1:BVhxswlZpoYFJ2WYb2DbHekumu3JOyMmVYSOh0a+Vww=
 github.com/x1nchen/portainer v1.23.7 h1:Ar21IB3tScba/Y7fZ6sFdOhmRwkFypnAWtgo1Gu3tOs=
 github.com/x1nchen/portainer v1.23.7/go.mod h1:BVhxswlZpoYFJ2WYb2DbHekumu3JOyMmVYSOh0a+Vww=
+github.com/x1nchen/portainer v1.23.8 h1:XvcaK3YHtbsc0nBFwJ5Tq/JSu71myKgNu47nF2Pl+kw=
+github.com/x1nchen/portainer v1.23.8/go.mod h1:BVhxswlZpoYFJ2WYb2DbHekumu3JOyMmVYSOh0a+Vww=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c h1:u40Z8hqBAAQyv+vATcGgV0YCnDjqSL7/q/JyPhhJSPk=
 github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c/go.mod h1:lB8K/P019DLNhemzwFU4jHLhdvlE6uDZjXFejJXr49I=
 github.com/xdg/stringprep v0.0.0-20180714160509-73f8eece6fdc h1:n+nNi93yXLkJvKwXNP9d55HC7lGK4H/SRcwB5IaUZLo=
