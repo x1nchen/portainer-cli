@@ -13,7 +13,7 @@ type ContainerExtend struct {
 }
 
 // KeyWithEndpoint
-// format: {EndpointId}#{ContainerName}#{ContainerID}
+// format: {EndpointId}:{ContainerName}:{ContainerID}
 func (c ContainerExtend) KeyWithEndpoint() string {
 	var containerName string
 
