@@ -12,6 +12,8 @@ type ContainerExtend struct {
 	model.DockerContainer
 }
 
+// KeyWithEndpoint
+// format: {EndpointId}#{ContainerName}#{ContainerID}
 func (c ContainerExtend) KeyWithEndpoint() string {
 	var containerName string
 
@@ -22,7 +24,7 @@ func (c ContainerExtend) KeyWithEndpoint() string {
 		}
 	}
 
-	return fmt.Sprintf("%s#%d", containerName, c.EndpointId)
+	return fmt.Sprintf("%d:%s:%s", c.EndpointId, containerName, c.ID)
 }
 
 func (c ContainerExtend) KeyWithContainerID() string {

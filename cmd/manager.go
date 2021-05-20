@@ -115,7 +115,7 @@ func (c *Manager) SyncData() error {
 		return err
 	}
 
-	err = c.store.ContainerService.BatchUpdateContainers(containerList...)
+	err = c.store.ContainerService.BatchUpdateContainers(context.TODO(), containerList...)
 	if err != nil {
 		return err
 	}

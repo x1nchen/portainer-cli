@@ -2,6 +2,8 @@ package container
 
 import (
 	"bytes"
+	"context"
+	"fmt"
 
 	"github.com/x1nchen/portainer-cli/cache/internal"
 	"github.com/x1nchen/portainer-cli/err"
@@ -53,15 +55,15 @@ func (service *Service) GetContainByID(ID int) (*climodel.ContainerExtend, error
 
 // UpdateContainer UpdateEndpoint updates an endpoint.
 // TODO need to update data in BucketContainerName
-func (service *Service) UpdateContainer(ID int, container *climodel.ContainerExtend) error {
-	identifier := internal.Itob(ID)
+func (service *Service) UpdateContainer(ID string, container *climodel.ContainerExtend) error {
+	identifier := internal.StringToBytes(ID)
 
 	return internal.UpdateObject(service.db, BucketContainerID, identifier, container)
 }
 
 // DeleteContainer deletes an endpoint.
-func (service *Service) DeleteContainer(ID int) error {
-	identifier := internal.Itob(ID)
+func (service *Service) DeleteContainer(ID string) error {
+	identifier := internal.StringToBytes(ID)
 	err := service.db.Update(func(tx *bolt.Tx) error {
 		bucketCI := tx.Bucket([]byte(BucketContainerID))
 		value := bucketCI.Get(identifier)
@@ -147,10 +149,65 @@ func (service *Service) FuzzyFindContainerByName(name string) ([]climodel.Contai
 	return containers, err
 }
 
+// SyncEndpointContainer sync containers upon endpoint
+func (service *Service) SyncEndpointContainer(
+	ctx context.Context,
+	endpointID int,
+	containers ...climodel.ContainerExtend,
+) error {
+	var containerIDList []string
+
+	err := service.db.Update(func(tx *bolt.Tx) error {
+		c := tx.Bucket([]byte(BucketContainerName)).Cursor()
+		prefix := internal.StringToBytes(fmt.Sprintf("%d:", endpointID))
+
+		for k, v := c.Seek(prefix); k != nil && bytes.HasPrefix(k, prefix); k, v = c.Next() {
+			var cont climodel.ContainerExtend
+			err := internal.UnmarshalObjectWithJsoniter(v, &cont)
+			if err != nil {
+				return err
+			}
+			containerIDList = append(containerIDList, cont.ID)
+			if err = c.Delete(); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if err = service.DeleteContainerInIDBucket(ctx, containerIDList...);err != nil {
+		return err
+	}
+
+	if err = service.BatchUpdateContainers(ctx, containers...); err != nil {
+		return err
+	}
+
+	return  nil
+}
+
+func (service *Service) DeleteContainerInIDBucket(ctx context.Context, idList ...string) error {
+	return service.db.Batch(func(tx *bolt.Tx) error {
+		bucketID := tx.Bucket([]byte(BucketContainerID))
+		for _, id := range idList {
+			err := bucketID.Delete(internal.StringToBytes(id))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 // BatchUpdateContainers 批量更新 container
 // 1. bucket key 格式是容器的 name#container_id
 // 2. bucket key 格式是容器的 id
-func (service *Service) BatchUpdateContainers(containers ...climodel.ContainerExtend) error {
+func (service *Service) BatchUpdateContainers(ctx context.Context, containers ...climodel.ContainerExtend) error {
 	return service.db.Batch(func(tx *bolt.Tx) error {
 		bucketCN := tx.Bucket([]byte(BucketContainerName))
 		for _, container := range containers {
@@ -281,19 +338,17 @@ func (service *Service) CreateDatabase() (
 
 	err = service.db.Update(func(tx *bolt.Tx) error {
 		if bucketCN, err = tx.CreateBucketIfNotExists([]byte(BucketContainerName)); err != nil {
-			return  err
+			return err
 		}
 
 		if bucketCN, err = tx.CreateBucketIfNotExists([]byte(BucketContainerID)); err != nil {
-			return  err
+			return err
 		}
 		return nil
 	})
 
 	return
 }
-
-
 
 // DB return db instance
 func (service *Service) DB() *bolt.DB {

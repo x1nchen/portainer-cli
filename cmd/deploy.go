@@ -10,6 +10,7 @@ import (
 	"github.com/docker/docker/api/types/network"
 	"github.com/spf13/cobra"
 	clierr "github.com/x1nchen/portainer-cli/err"
+	climodel "github.com/x1nchen/portainer-cli/model"
 	"github.com/x1nchen/portainer/model"
 )
 
@@ -140,5 +141,31 @@ func deploy(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	cmd.Println("start container success", newContainer.ID)
+
+	cmd.Println("sync endpoint container", container.EndpointId)
+
+	cons, err := manager.pclient.ListContainer(ctx, container.EndpointId)
+	if err != nil {
+		cmd.PrintErr(err)
+		return err
+	}
+	endpointContainerList := make([]climodel.ContainerExtend, 0, len(cons))
+	for _, con := range cons {
+		endpointContainerList = append(endpointContainerList, climodel.ContainerExtend{
+			EndpointId:      container.EndpointId,
+			EndpointName:    container.EndpointName,
+			DockerContainer: con,
+		})
+	}
+
+	if err = manager.store.ContainerService.SyncEndpointContainer(
+		ctx,
+		container.EndpointId,
+		endpointContainerList...
+	); err != nil {
+		cmd.PrintErr(err)
+		return err
+	}
+
 	return nil
 }
