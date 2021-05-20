@@ -2,12 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
-
-	climodel "github.com/x1nchen/portainer-cli/model"
 
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
+	climodel "github.com/x1nchen/portainer-cli/model"
 )
 
 func init() {
@@ -15,7 +13,7 @@ func init() {
 	// searchCmd.Flags().StringVarP(&Password, "password", "p", "", "user")
 }
 
-// 登录
+// search
 var searchCmd = &cobra.Command{
 	Use:     "search",
 	Short:   "search container with fuzzy name",
@@ -43,7 +41,7 @@ func search(cmd *cobra.Command, args []string) error {
 	title := fmt.Sprintf(template, "NAME", "TAG", "NODE", "STATE", "IMAGE")
 	cmd.Println(au.White(title))
 	for _, container := range containers {
-		imageName, imageTag := splitImage(container.Image)
+		imageName, imageTag := SplitFullImageName(container.Image)
 		outMessage := fmt.Sprintf(template, container.Names[0][1:],
 			imageTag, container.EndpointName, container.State, imageName)
 		if container.State == "running" { // TODO const
@@ -52,9 +50,7 @@ func search(cmd *cobra.Command, args []string) error {
 		if container.State == "exited" { // TODO const
 			cmd.Println(au.Red(outMessage))
 		}
-
 	}
-
 	return nil
 }
 
@@ -62,7 +58,7 @@ func search(cmd *cobra.Command, args []string) error {
 func genOutTemplate(list []climodel.ContainerExtend) string {
 	var nameLen, tagLen, nodeLen, stateLen, imageLen int
 	for _, v := range list {
-		imageName, imageTag := splitImage(v.Image)
+		imageName, imageTag := SplitFullImageName(v.Image)
 		if len(v.Names[0][1:]) > nameLen {
 			nameLen = len(v.Names[0][1:])
 		}
@@ -86,15 +82,4 @@ func genOutTemplate(list []climodel.ContainerExtend) string {
 		"%-", stateLen, "s ",
 		"%-", imageLen, "s ",
 	)
-}
-
-func splitImage(name string) (imageName, imageTag string) {
-	image := strings.Split(name, ":")
-	imageName = image[0]
-	if len(image) == 1 {
-		imageTag = "<none>"
-		return
-	}
-	imageTag = image[1]
-	return
 }

@@ -7,6 +7,7 @@ import (
 
 	perr "github.com/pkg/errors"
 	"github.com/stretchr/testify/suite"
+	"github.com/x1nchen/portainer-cli/model"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -37,22 +38,6 @@ func (s *BoltStoreTestSuite) TearDownSuite() {
 }
 
 func (s *BoltStoreTestSuite) TearDownTest() {
-	// 在每次测试后执行移除数据
-	err := s.bdb.Update(func(tx *bolt.Tx) error {
-		// Retrieve the users bucket.
-		// This should be created when the DB is first opened.
-		err := tx.DeleteBucket([]byte("test"))
-
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	s.NoError(err)
-	err = s.bdb.Close()
-	s.NoError(err)
 }
 
 func newTestBoltStore() (*Store, *bolt.DB, error) {
@@ -65,6 +50,10 @@ func newTestBoltStore() (*Store, *bolt.DB, error) {
 	s := &Store{
 		host: "test",
 		bdb:  db,
+	}
+	err = s.initServices()
+	if err != nil {
+		return s, db, perr.WithMessage(err, "init store services")
 	}
 	return s, db, nil
 }
@@ -111,16 +100,31 @@ func (s *BoltStoreTestSuite) TestBoltDBSeek() {
 
 }
 
-// func (s *BoltStoreTestSuite) TestSaveToken() {
-// 	err := s.bs.SaveToken("testjwttoken")
-// 	s.NoError(err)
-// }
-//
-// func (s *BoltStoreTestSuite) TestGetToken() {
-// 	err := s.bs.SaveToken("testjwttoken")
-// 	s.NoError(err)
-//
-// 	t, err := s.bs.GetToken()
-// 	s.NoError(err)
-// 	s.Equal("testjwttoken", t)
-// }
+func (s *BoltStoreTestSuite) TestSaveToken() {
+	err := s.bs.TokenService.SaveToken("testjwttoken")
+	s.Require().NoError(err)
+}
+
+func (s *BoltStoreTestSuite) TestGetToken() {
+	err := s.bs.TokenService.SaveToken("testjwttoken")
+	s.NoError(err)
+
+	t, err := s.bs.TokenService.GetToken()
+	s.Require().NoError(err)
+	s.Equal("testjwttoken", t)
+}
+
+func (s *BoltStoreTestSuite) TestRegistyGetUser() {
+	user := &model.RegistryUser{
+		Username:      "testuser",
+		Password:      "testpwd",
+		Email:         "testemail",
+		ServerAddress: "testaddr",
+	}
+	err := s.bs.RegistryService.UpdateUser(user)
+	s.Require().NoError(err)
+
+	userGet, err := s.bs.RegistryService.GetUser()
+	s.Require().NoError(err)
+	s.Equal(user, userGet)
+}

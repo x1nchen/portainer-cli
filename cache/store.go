@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/x1nchen/portainer-cli/cache/container"
+	"github.com/x1nchen/portainer-cli/cache/registry"
 
 	"github.com/x1nchen/portainer-cli/cache/internal"
 
@@ -24,10 +25,12 @@ var (
 // Store is the data cache for portainer
 type Store struct {
 	host             string // host is for bbolt bucket
+	DBName           string
 	bdb              *bolt.DB
 	TokenService     *token.Service
 	EndpointService  *endpoint.Service
 	ContainerService *container.Service
+	RegistryService  *registry.Service
 }
 
 // var _ Store = &bboltStore{}
@@ -43,8 +46,10 @@ func NewBoltStore(datadir string, host string) (*Store, error) {
 
 	s := &Store{
 		host: host,
+		DBName: dbName,
 		bdb:  db,
 	}
+
 	err = s.initServices()
 	if err != nil {
 		return nil, perr.WithMessage(err, "init store services")
@@ -70,6 +75,11 @@ func (b *Store) initServices() error {
 		return err
 	}
 	b.ContainerService = containerService
+	registryService, err := registry.NewService(b.bdb)
+	if err != nil {
+		return err
+	}
+	b.RegistryService = registryService
 	return nil
 }
 

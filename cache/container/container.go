@@ -2,17 +2,18 @@ package container
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/x1nchen/portainer-cli/cache/internal"
+	"github.com/x1nchen/portainer-cli/err"
 	climodel "github.com/x1nchen/portainer-cli/model"
-	"github.com/x1nchen/portainer/model"
 	bolt "go.etcd.io/bbolt"
 )
 
 const (
-	// BucketName represents the name of the bucket where this service stores data.
-	BucketName = "container"
+	// BucketContainerName represents the name of the bucket where this service stores data.
+	BucketContainerName = "container-name"
+	// BucketContainerID only stores keys for container id
+	BucketContainerID = "container-id"
 )
 
 // Service represents a service for managing endpoint data.
@@ -22,7 +23,12 @@ type Service struct {
 
 // NewService creates a new instance of a service.
 func NewService(db *bolt.DB) (*Service, error) {
-	err := internal.CreateBucket(db, BucketName)
+	err := internal.CreateBucket(db, BucketContainerName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = internal.CreateBucket(db, BucketContainerID)
 	if err != nil {
 		return nil, err
 	}
@@ -32,12 +38,12 @@ func NewService(db *bolt.DB) (*Service, error) {
 	}, nil
 }
 
-// Endpoint returns an endpoint by ID.
-func (service *Service) GetContain(ID int) (*model.DockerContainer, error) {
-	var mc model.DockerContainer
-	identifier := internal.Itob(int(ID))
+// GetContainByID find container by ID.
+func (service *Service) GetContainByID(ID int) (*climodel.ContainerExtend, error) {
+	var mc climodel.ContainerExtend
+	identifier := internal.Itob(ID)
 
-	err := internal.GetObject(service.db, BucketName, identifier, &mc)
+	err := internal.GetObject(service.db, BucketContainerID, identifier, &mc)
 	if err != nil {
 		return nil, err
 	}
@@ -45,24 +51,57 @@ func (service *Service) GetContain(ID int) (*model.DockerContainer, error) {
 	return &mc, nil
 }
 
-// UpdateEndpoint updates an endpoint.
-func (service *Service) UpdateContainer(ID int, endpoint *model.Endpoint) error {
-	identifier := internal.Itob(int(ID))
-	return internal.UpdateObject(service.db, BucketName, identifier, endpoint)
+// UpdateContainer UpdateEndpoint updates an endpoint.
+// TODO need to update data in BucketContainerName
+func (service *Service) UpdateContainer(ID int, container *climodel.ContainerExtend) error {
+	identifier := internal.Itob(ID)
+
+	return internal.UpdateObject(service.db, BucketContainerID, identifier, container)
 }
 
-// DeleteEndpoint deletes an endpoint.
+// DeleteContainer deletes an endpoint.
 func (service *Service) DeleteContainer(ID int) error {
-	identifier := internal.Itob(int(ID))
-	return internal.DeleteObject(service.db, BucketName, identifier)
+	identifier := internal.Itob(ID)
+	err := service.db.Update(func(tx *bolt.Tx) error {
+		bucketCI := tx.Bucket([]byte(BucketContainerID))
+		value := bucketCI.Get(identifier)
+		if value == nil {
+			return err.ErrObjectNotFound
+		}
+		var container climodel.ContainerExtend
+
+		if err := internal.UnmarshalObjectWithJsoniter(value, &container); err != nil {
+			return err
+		}
+
+		// delete key in bucket-container-name
+		if err := bucketCI.DeleteBucket(identifier); err != nil {
+			return err
+		}
+
+		// delete key in bucket-container-id
+		bucketCN := tx.Bucket([]byte(BucketContainerName))
+		keyCN := container.KeyWithEndpoint()
+		if err := bucketCN.Delete(internal.StringToBytes(keyCN)); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// Endpoints return an array containing all the endpoints.
+// FindAllContainers return an array containing all containers
 func (service *Service) FindAllContainers() ([]climodel.ContainerExtend, error) {
 	var containers = make([]climodel.ContainerExtend, 0)
 
 	err := service.db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(BucketName))
+		bucket := tx.Bucket([]byte(BucketContainerName))
 
 		cursor := bucket.Cursor()
 		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
@@ -80,12 +119,12 @@ func (service *Service) FindAllContainers() ([]climodel.ContainerExtend, error) 
 	return containers, err
 }
 
-// Endpoints return an array containing all the endpoints.
+// FuzzyFindContainerByName Endpoints return an array containing all the endpoints.
 func (service *Service) FuzzyFindContainerByName(name string) ([]climodel.ContainerExtend, error) {
 	var containers = make([]climodel.ContainerExtend, 0)
 
 	err := service.db.View(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(BucketName))
+		bucket := tx.Bucket([]byte(BucketContainerName))
 		cursor := bucket.Cursor()
 
 		match := internal.StringToBytes(name)
@@ -108,31 +147,34 @@ func (service *Service) FuzzyFindContainerByName(name string) ([]climodel.Contai
 	return containers, err
 }
 
-// GetNextIdentifier returns the next identifier for an endpoint.
-func (service *Service) GetNextIdentifier() int {
-	return internal.GetNextIdentifier(service.db, BucketName)
-}
-
-// 批量更新 container，key 格式是容器的 name#container_id
+// BatchUpdateContainers 批量更新 container
+// 1. bucket key 格式是容器的 name#container_id
+// 2. bucket key 格式是容器的 id
 func (service *Service) BatchUpdateContainers(containers ...climodel.ContainerExtend) error {
 	return service.db.Batch(func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(BucketName))
+		bucketCN := tx.Bucket([]byte(BucketContainerName))
 		for _, container := range containers {
 			data, err := internal.MarshalObject(container)
 			if err != nil {
 				return err
 			}
 
-			var containerName string
-
-			if len(container.Names) > 0 {
-				if len(container.Names[0]) > 0 {
-					// 注意：容器的名字有前缀 "/"，如 /node-api
-					containerName = container.Names[0][1:]
-				}
+			key := container.KeyWithEndpoint()
+			err = bucketCN.Put(internal.StringToBytes(key), data)
+			if err != nil {
+				return err
 			}
-			key := fmt.Sprintf("%s#%d", containerName, container.EndpointId)
-			err = bucket.Put(internal.StringToBytes(key), data)
+		}
+
+		bucketCI := tx.Bucket([]byte(BucketContainerID))
+		for _, container := range containers {
+			data, err := internal.MarshalObject(container)
+			if err != nil {
+				return err
+			}
+
+			key := container.KeyWithContainerID()
+			err = bucketCI.Put(internal.StringToBytes(key), data)
 			if err != nil {
 				return err
 			}
@@ -142,26 +184,118 @@ func (service *Service) BatchUpdateContainers(containers ...climodel.ContainerEx
 	})
 }
 
-// GetNextIdentifier returns the next identifier for an endpoint.
+// Synchronize creates, updates and deletes endpoints inside a single transaction.
+func (service *Service) Synchronize(toCreate, toUpdate, toDelete []*climodel.ContainerExtend) error {
+	err := service.db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(BucketContainerName))
+		for _, container := range toCreate {
+			data, err := internal.MarshalObject(container)
+			if err != nil {
+				return err
+			}
+			err = bucket.Put(internal.StringToBytes(container.KeyWithEndpoint()), data)
+			if err != nil {
+				return err
+			}
+		}
+		for _, container := range toUpdate {
+			data, err := internal.MarshalObject(container)
+			if err != nil {
+				return err
+			}
+			err = bucket.Put(internal.StringToBytes(container.KeyWithEndpoint()), data)
+			if err != nil {
+				return err
+			}
+		}
+		for _, container := range toDelete {
+			err := bucket.Delete(internal.StringToBytes(container.KeyWithEndpoint()))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	err = service.db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(BucketContainerID))
+		for _, container := range toCreate {
+			data, err := internal.MarshalObject(container)
+			if err != nil {
+				return err
+			}
+			err = bucket.Put(internal.StringToBytes(container.ID), data)
+			if err != nil {
+				return err
+			}
+		}
+		for _, container := range toUpdate {
+			data, err := internal.MarshalObject(container)
+			if err != nil {
+				return err
+			}
+			err = bucket.Put(internal.StringToBytes(container.ID), data)
+			if err != nil {
+				return err
+			}
+		}
+		for _, container := range toDelete {
+			err := bucket.Delete(internal.StringToBytes(container.ID))
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TruncateDatabase delete bucket
 func (service *Service) TruncateDatabase() error {
 	return service.db.Update(func(tx *bolt.Tx) error {
-		return tx.DeleteBucket([]byte(BucketName))
+		if err := tx.DeleteBucket([]byte(BucketContainerName)); err != nil {
+			return err
+		}
+		if err := tx.DeleteBucket([]byte(BucketContainerID)); err != nil {
+			return err
+		}
+		return nil
 	})
 }
 
-// GetNextIdentifier returns the next identifier for an endpoint.
-func (service *Service) CreateDatabase() (*bolt.Bucket, error) {
-	var buc *bolt.Bucket
-	var err error
+// CreateDatabase create bucket
+func (service *Service) CreateDatabase() (
+	bucketCN *bolt.Bucket,
+	bucketCI *bolt.Bucket,
+	err error,
+) {
+
 	err = service.db.Update(func(tx *bolt.Tx) error {
-		buc, err = tx.CreateBucketIfNotExists([]byte(BucketName))
-		return err
+		if bucketCN, err = tx.CreateBucketIfNotExists([]byte(BucketContainerName)); err != nil {
+			return  err
+		}
+
+		if bucketCN, err = tx.CreateBucketIfNotExists([]byte(BucketContainerID)); err != nil {
+			return  err
+		}
+		return nil
 	})
 
-	return buc, err
+	return
 }
 
-// GetNextIdentifier returns the next identifier for an endpoint.
+
+
+// DB return db instance
 func (service *Service) DB() *bolt.DB {
 	return service.db
 }

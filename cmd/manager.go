@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
+	"github.com/mittwald/goharbor-client/v3/apiv1"
+	"github.com/spf13/cobra"
 	climodel "github.com/x1nchen/portainer-cli/model"
 
 	perr "github.com/pkg/errors"
@@ -14,17 +17,20 @@ import (
 	"github.com/x1nchen/portainer-cli/client"
 )
 
-func initManager(store *cache.Store, pclient *client.PortainerClient) *Manager {
+func initManager(store *cache.Store, pclient *client.PortainerClient, cmd *cobra.Command) *Manager {
 	m := &Manager{
 		store:   store,
 		pclient: pclient,
+		cmd: cmd,
 	}
 	return m
 }
 
 type Manager struct {
-	store   *cache.Store
-	pclient *client.PortainerClient
+	store          *cache.Store
+	cmd            *cobra.Command
+	pclient        *client.PortainerClient
+	registryClient *apiv1.RESTClient
 }
 
 func (c *Manager) Login(user string, password string) error {
@@ -42,6 +48,9 @@ func (c *Manager) Login(user string, password string) error {
 		return perr.WithMessage(err, "save token failed")
 	}
 
+	if Verbose {
+		c.cmd.Println("[portainer] token", token)
+	}
 	return nil
 }
 
@@ -78,7 +87,7 @@ func (c *Manager) SyncData() error {
 		fmt.Printf("sync endpoint %s container number %d\n", ep.Name, len(cons))
 
 		// force interval to avoid 502 error (api rate limit)
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(200 * time.Millisecond)
 	}
 	err = c.store.EndpointService.TruncateDatabase()
 	if err != nil {
@@ -101,7 +110,7 @@ func (c *Manager) SyncData() error {
 		return err
 	}
 
-	_, err = c.store.ContainerService.CreateDatabase()
+	_, _, err = c.store.ContainerService.CreateDatabase()
 	if err != nil {
 		return err
 	}
@@ -112,4 +121,35 @@ func (c *Manager) SyncData() error {
 	}
 
 	return nil
+}
+
+func SplitFullImageName(name string) (imageName, imageTag string) {
+	image := strings.Split(name, ":")
+	imageName = image[0]
+	if len(image) == 1 {
+		imageTag = "<none>"
+		return
+	}
+	imageTag = image[1]
+	return
+}
+
+func SplitFullRegistryImageName(name string) (dockerRegistryHost, imageShortName, imageTag string) {
+	image := strings.Split(name, ":")
+	imageName := image[0]
+	if len(image) == 1 {
+		imageTag = "<none>"
+		return
+	} else {
+		imageTag = image[1]
+	}
+
+	imageNameParts := strings.SplitN(imageName, "/", 2)
+	if len(imageNameParts) == 1 {
+		dockerRegistryHost = imageNameParts[0]
+		return
+	}
+	dockerRegistryHost = imageNameParts[0]
+	imageShortName = imageNameParts[1]
+	return
 }

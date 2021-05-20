@@ -176,7 +176,7 @@ func (service *Service) CreateDatabase() (*bolt.Bucket, error) {
 	return buc, err
 }
 
-// GetNextIdentifier returns the next identifier for an endpoint.
+// TruncateDatabase delete all data
 func (service *Service) TruncateDatabase() error {
 	return service.db.Update(func(tx *bolt.Tx) error {
 		return tx.DeleteBucket([]byte(BucketName))

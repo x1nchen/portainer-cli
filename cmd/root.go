@@ -22,6 +22,7 @@ var (
 	// portainer host
 	Host    string
 	Datadir string
+	Verbose bool
 	store   *cache.Store
 	pclient *client.PortainerClient
 	manager *Manager
@@ -30,13 +31,15 @@ var (
 func init() {
 	// cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&Host, "host", "", "host base url such as http://localhost:9000")
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(loginCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(searchCmd)
 	rootCmd.AddCommand(syncCmd)
-
+	rootCmd.AddCommand(deployCmd)
+	rootCmd.AddCommand(loginRegistryCmd)
 	// os.UserHomeDir()
 }
 
@@ -52,8 +55,8 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		rootCmd.Println(err)
+		os.Exit(-1)
 	}
 }
 
@@ -98,9 +101,8 @@ func initUnauthorizedManager(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	// fmt.Println("init deps")
 	pclient = client.NewPortainerClient(Host, "")
-	manager = initManager(store, pclient)
+	manager = initManager(store, pclient, cmd)
 
 	return nil
 }
@@ -124,7 +126,7 @@ func initAuthorizedManager(cmd *cobra.Command, args []string) error {
 
 	pclient = client.NewPortainerClient(Host, token)
 	// TODO validate token
-	manager = initManager(store, pclient)
+	manager = initManager(store, pclient, cmd)
 
 	return nil
 }

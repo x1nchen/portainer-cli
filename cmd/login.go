@@ -24,6 +24,9 @@ var loginCmd = &cobra.Command{
 }
 
 func login(cmd *cobra.Command, args []string) error {
+	if Verbose {
+		cmd.Println("[bbolt] db name", manager.store.DBName)
+	}
 	err := manager.Login(User, Password)
 	if err != nil {
 		cmd.PrintErr("login failed", err)
