@@ -40,6 +40,8 @@ func init() {
 	rootCmd.AddCommand(syncCmd)
 	rootCmd.AddCommand(deployCmd)
 	rootCmd.AddCommand(loginRegistryCmd)
+	rootCmd.AddCommand(upgradeCmd)
+
 	// os.UserHomeDir()
 }
 

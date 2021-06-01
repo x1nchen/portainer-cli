@@ -54,7 +54,7 @@ func (c *Manager) Login(user string, password string) error {
 	return nil
 }
 
-// portainer 服务器数据同步到本地 db 缓存
+// SyncData portainer 服务器数据同步到本地 db 缓存
 func (c *Manager) SyncData() error {
 	ctx := context.Background()
 

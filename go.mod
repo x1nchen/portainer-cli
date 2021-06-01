@@ -5,7 +5,8 @@ module github.com/x1nchen/portainer-cli
 go 1.16
 
 require (
-	github.com/docker/docker v20.10.6+incompatible // indirect
+	github.com/c-bata/go-prompt v0.2.6
+	github.com/docker/docker v20.10.6+incompatible
 	github.com/json-iterator/go v1.1.10
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mittwald/goharbor-client/v3 v3.3.0
