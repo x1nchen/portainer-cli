@@ -17,8 +17,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - uses: FranzDiebold/github-env-vars-action@v2
       - name: Print environment variables
-        uses: FranzDiebold/github-env-vars-action@v2
         run: |
           echo "CI_REPOSITORY_SLUG=$CI_REPOSITORY_SLUG"
           echo "CI_REPOSITORY_OWNER=$CI_REPOSITORY_OWNER"
