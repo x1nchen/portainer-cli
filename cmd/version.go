@@ -4,13 +4,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "v0.0.9"
+var (
+	Repo = ""
+	Branch = ""
+	Commit = ""
+	Version = ""
+)
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of portainer",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println(version)
+		cmd.Printf("repo: %s \nBranch: %s\nCommit: %s\nVersion: %s\n", Repo, Branch, Commit, Version)
 	},
 }

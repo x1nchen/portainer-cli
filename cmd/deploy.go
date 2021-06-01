@@ -26,10 +26,11 @@ var deployCmd = &cobra.Command{
 }
 
 // STEP
-// 1. inspect container
-// 2. create target image
+// 1. inspect a container
+// 2. create deploy target image (docker pull)
 // 3. delete target container
 // 4. create container
+// 5. start container
 func deploy(cmd *cobra.Command, args []string) error {
 	ctx := context.Background()
 	name := args[0]
