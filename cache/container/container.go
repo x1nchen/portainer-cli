@@ -41,9 +41,9 @@ func NewService(db *bolt.DB) (*Service, error) {
 }
 
 // GetContainByID find container by ID.
-func (service *Service) GetContainByID(ID int) (*climodel.ContainerExtend, error) {
+func (service *Service) GetContainByID(id string) (*climodel.ContainerExtend, error) {
 	var mc climodel.ContainerExtend
-	identifier := internal.Itob(ID)
+	identifier := internal.StringToBytes(id)
 
 	err := internal.GetObject(service.db, BucketContainerID, identifier, &mc)
 	if err != nil {

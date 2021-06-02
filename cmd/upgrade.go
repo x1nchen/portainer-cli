@@ -1,10 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"strings"
-
-	"github.com/c-bata/go-prompt"
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -28,28 +25,76 @@ func upgrade(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	var completer = func(d prompt.Document) []prompt.Suggest {
-		var s []prompt.Suggest
-		for _, container := range containers {
-			serviceName := container.Names[0][1:]
-			imageTag := strings.SplitN(container.Image, "/", 2)[1]
-			description := fmt.Sprintf("%s %s %s", container.EndpointName, imageTag, container.State)
-			s = append(s, prompt.Suggest{
-				Text:        serviceName,
-				Description: description,
-			})
+	nameSet := make(map[string]int)
+	var serviceNameOptions []string
+	for _, container := range containers {
+		srvName := container.ContainerName()
+		if _, ok := nameSet[srvName]; ok {
+			continue
 		}
 
-		return prompt.FilterContains(s, d.GetWordBeforeCursor(), true)
+		nameSet[srvName] = 1
+
+		// tmpStrList := strings.SplitN(container.Image, "/", 2)
+		// var imageTag string
+		// imageTag = tmpStrList[0]
+		// if len(tmpStrList) == 2 {
+		// 	imageTag = tmpStrList[1]
+		// }
+
+		// description := fmt.Sprintf("%s %s %s %s",srvName, container.EndpointName, imageTag, container.State)
+		serviceNameOptions = append(serviceNameOptions, srvName)
 	}
 
-	cmd.Println("Please select service need to upgrade")
-	service := prompt.Input("> ", completer)
-	fmt.Println("You selected " + service)
-	// select
+	// select service name
+	var serviceName string
+	// the questions to ask
+	var serviceNameQuestion = []*survey.Question{
+		{
+			Name: "servicename",
+			Prompt: &survey.Select{
+				Message: "select service need to upgrade >",
+				Options: serviceNameOptions,
+			},
+			Validate: survey.Required,
+		},
+	}
 
+	err = survey.Ask(serviceNameQuestion, &serviceName)
+	if err != nil {
+		return err
+	}
 
+	cmd.Println("You selected " + serviceName)
 
+	// select instance
+	{
+		var instance string
+		var serviceInstanceOptions []string
+		for _, container := range containers {
+			srvName := container.ContainerName()
+			if srvName == serviceName {
+				serviceInstanceOptions = append(serviceInstanceOptions, container.ID)
+			}
+		}
 
+		// the questions to ask
+		var serviceInstanceQuestion = []*survey.Question{
+			{
+				Name: "serviceinstance",
+				Prompt: &survey.MultiSelect{
+					Message: "select instance to upgrade>",
+					Options: serviceInstanceOptions,
+				},
+				Validate: survey.Required,
+			},
+		}
+
+		err = survey.Ask(serviceInstanceQuestion, &instance)
+		if err != nil {
+			return err
+		}
+		cmd.Println("You selected " + instance)
+	}
 	return nil
 }

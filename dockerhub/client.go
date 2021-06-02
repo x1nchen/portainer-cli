@@ -8,22 +8,34 @@ import (
 )
 
 type Client struct {
-	restClient *apiv1.RESTClient
+	serverAddr string
+	user          string
+	password      string
+	restClient    *apiv1.RESTClient
+}
+
+// ServerAddr server address
+func (c *Client) ServerAddr() string {
+	return c.serverAddr
 }
 
 func NewClient(serverAddr, user, password string) (*Client, error) {
 	registryClient, err := apiv1.NewRESTClientForHost(
-		serverAddr + "/api", // TODO need carefully handle the trailing slash
+		serverAddr+"/api", // TODO need carefully handle the trailing slash
 		user,
 		password,
 	)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
-	c := new(Client)
-	c.restClient = registryClient
+	c := &Client{
+		serverAddr: serverAddr,
+		user:          user,
+		password:      password,
+		restClient:    registryClient,
+	}
 
 	return c, nil
 }

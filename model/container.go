@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/x1nchen/portainer/model"
 )
@@ -25,6 +26,24 @@ func (c ContainerExtend) KeyWithEndpoint() string {
 	}
 
 	return fmt.Sprintf("%d:%s:%s", c.EndpointId, containerName, c.ID)
+}
+
+func (c ContainerExtend) ContainerName() string {
+	var containerName string
+
+	if len(c.Names) > 0 {
+		if len(c.Names[0]) > 0 {
+			// 注意：容器的名字有前缀 "/"，如 /node-api
+			name := c.Names[0]
+			if strings.HasPrefix(name, "/") {
+				containerName = c.Names[0][1:]
+			} else {
+				containerName = name
+			}
+		}
+	}
+
+	return containerName
 }
 
 func (c ContainerExtend) KeyWithContainerID() string {
