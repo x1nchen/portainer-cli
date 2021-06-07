@@ -1,6 +1,7 @@
 module github.com/x1nchen/portainer-cli
 
 // replace github.com/x1nchen/portainer => ../portainer
+replace github.com/mittwald/goharbor-client/v3 => github.com/x1nchen/goharbor-client/v3 v3.3.1-0.20210607124842-d4cf1cb80f59
 
 go 1.16
 

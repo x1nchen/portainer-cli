@@ -135,6 +135,22 @@ func initAuthorizedManager(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return err
 		}
+
+		if user == nil {
+			cmd.Println("docker registry auth not found. do login-registry first")
+			return nil
+		}
+
+		if user.ServerAddress == "" {
+			cmd.Println("docker registry auth not found. do login-registry first")
+			return nil
+		}
+
+		if !strings.HasPrefix(user.ServerAddress, "http") &&
+			!strings.HasPrefix(user.ServerAddress, "https") {
+			user.ServerAddress = "https://" + user.ServerAddress
+		}
+
 		registryClient, err = dockerhub.NewClient(user.ServerAddress, user.Username, user.Password)
 		if err != nil {
 			return err

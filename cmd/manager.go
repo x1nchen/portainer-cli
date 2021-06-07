@@ -271,6 +271,12 @@ func SplitFullImageName(name string) (imageName, imageTag string) {
 	return
 }
 
+
+// SplitFullRegistryImageName
+// split dockerRegistryHost/imageShortName/imageTag into each piece
+// example:
+// dockerhub.com/ccx/go-test-grpc-srv:v1.0.0
+// yields [dockerhub.com ccx/go-test-grpc-srv v1.0.0]
 func SplitFullRegistryImageName(name string) (dockerRegistryHost, imageShortName, imageTag string) {
 	image := strings.Split(name, ":")
 	imageName := image[0]

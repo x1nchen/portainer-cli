@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mittwald/goharbor-client/v3/apiv1"
+	goharbormodel "github.com/mittwald/goharbor-client/v3/apiv1/model"
 )
 
 type Client struct {
@@ -20,8 +21,13 @@ func (c *Client) ServerAddr() string {
 }
 
 func NewClient(serverAddr, user, password string) (*Client, error) {
+	// if !strings.HasPrefix(serverAddr, "https") &&
+	// 	!strings.HasPrefix(serverAddr, "http") {
+	// 	serverAddr = "https:" + serverAddr + "/api" // TODO need carefully handle the trailing slash
+	// }
+
 	registryClient, err := apiv1.NewRESTClientForHost(
-		serverAddr+"/api", // TODO need carefully handle the trailing slash
+		serverAddr + "/api",
 		user,
 		password,
 	)
@@ -49,4 +55,13 @@ func (c *Client) Auth(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (c *Client) FindImageTagList(ctx context.Context, imageShortName string) ([]*goharbormodel.DetailedTag ,error) {
+	tags, err := c.restClient.GetRepositoryTags(ctx, imageShortName)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags, nil
 }
