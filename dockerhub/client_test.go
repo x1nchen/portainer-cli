@@ -9,6 +9,10 @@ import (
 
 
 func TestDockerhubClient(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skip test")
+	}
+
 	c , err := NewClient("https://dockerhub.com", "test", "test")
 	require.NoError(t, err)
 

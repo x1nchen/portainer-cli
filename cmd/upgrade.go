@@ -149,11 +149,19 @@ func upgrade(cmd *cobra.Command, args []string) error {
 		cmd.Println("You selected ", imageTagAnswer)
 	}
 
-	// for _, instanceAnswer := range instanceAnswers {
-	// 	instanceID := strings.Split(instanceAnswer, " ")[0]
-	// 	manager.store.ContainerService.GetContainByID()
-	//
-	// }
+	for _, instanceAnswer := range instanceAnswers {
+		instanceID := strings.Split(instanceAnswer, " ")[0]
+		container, err := manager.store.ContainerService.GetContainByID(instanceID)
+		if err != nil {
+			cmd.Printf("find service container error %s \n", instanceAnswer)
+			continue
+		}
+		if err = manager.UpgradeService(ctx, container.ID, imageTagAnswer); err != nil {
+			cmd.Printf("upgrade service container error %s \n", instanceAnswer)
+			continue
+		}
+		cmd.Printf("[>] %s %s %s\n", container.ContainerName(), container.EndpointName, container.Image)
+	}
 
 	return nil
 }
