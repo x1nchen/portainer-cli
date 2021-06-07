@@ -41,9 +41,9 @@ func NewService(db *bolt.DB) (*Service, error) {
 }
 
 // GetContainByID find container by ID.
-func (service *Service) GetContainByID(ID int) (*climodel.ContainerExtend, error) {
+func (service *Service) GetContainByID(id string) (*climodel.ContainerExtend, error) {
 	var mc climodel.ContainerExtend
-	identifier := internal.Itob(ID)
+	identifier := internal.StringToBytes(id)
 
 	err := internal.GetObject(service.db, BucketContainerID, identifier, &mc)
 	if err != nil {
@@ -180,7 +180,7 @@ func (service *Service) SyncEndpointContainer(
 		return err
 	}
 
-	if err = service.DeleteContainerInIDBucket(ctx, containerIDList...);err != nil {
+	if err = service.DeleteContainerInIDBucket(ctx, containerIDList...); err != nil {
 		return err
 	}
 
@@ -188,7 +188,7 @@ func (service *Service) SyncEndpointContainer(
 		return err
 	}
 
-	return  nil
+	return nil
 }
 
 func (service *Service) DeleteContainerInIDBucket(ctx context.Context, idList ...string) error {

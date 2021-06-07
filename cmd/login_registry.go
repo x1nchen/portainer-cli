@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	RegistryUser     string
-	RegistryPassword string
+	RegistryUser          string
+	RegistryPassword      string
 	RegistryServerAddress string
 )
 
@@ -38,13 +38,13 @@ func loginRegistry(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	dockerhubClient, err := dockerhub.NewClient(RegistryServerAddress, RegistryUser, RegistryPassword)
+	registryClient, err := dockerhub.NewClient(registryURL.Path, RegistryUser, RegistryPassword)
 	if err != nil {
 		return err
 	}
 
 	// try list project to verify the availability of credentials
-	if err = dockerhubClient.Auth(ctx); err != nil {
+	if err = registryClient.Auth(ctx); err != nil {
 		return err
 	}
 
@@ -53,7 +53,7 @@ func loginRegistry(cmd *cobra.Command, args []string) error {
 		Username:      RegistryUser,
 		Password:      RegistryPassword,
 		Email:         "",
-		ServerAddress: registryURL.Host,
+		ServerAddress: registryURL.Path,
 	}
 
 	if err = manager.store.RegistryService.UpdateUser(&user); err != nil {

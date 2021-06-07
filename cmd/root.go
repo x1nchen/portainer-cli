@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/x1nchen/portainer-cli/client"
+	"github.com/x1nchen/portainer-cli/dockerhub"
 
 	perr "github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -104,7 +105,7 @@ func initUnauthorizedManager(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	pclient = client.NewPortainerClient(Host, "")
-	manager = initManager(store, pclient, cmd)
+	manager = initManager(store, pclient, nil, cmd)
 
 	return nil
 }
@@ -127,8 +128,32 @@ func initAuthorizedManager(cmd *cobra.Command, args []string) error {
 	}
 
 	pclient = client.NewPortainerClient(Host, token)
+	var registryClient *dockerhub.Client
+	switch cmd.Name() {
+	case "deploy", "upgrade": // deploy and upgrade command need registry client initiated
+		user, err := store.RegistryService.GetUser()
+		if err != nil {
+			return err
+		}
+
+		if user == nil {
+			cmd.Println("docker registry auth not found. do login-registry first")
+			return nil
+		}
+
+		if user.ServerAddress == "" {
+			cmd.Println("docker registry auth not found. do login-registry first")
+			return nil
+		}
+
+		registryClient, err = dockerhub.NewClient(user.ServerAddress, user.Username, user.Password)
+		if err != nil {
+			return err
+		}
+	}
+
 	// TODO validate token
-	manager = initManager(store, pclient, cmd)
+	manager = initManager(store, pclient, registryClient, cmd)
 
 	return nil
 }

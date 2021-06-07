@@ -61,7 +61,6 @@ func (service *Service) UpdateUser(user *model.RegistryUser) error {
 	})
 }
 
-
 // TruncateDatabase delete bucket
 func (service *Service) TruncateDatabase() error {
 	return service.db.Update(func(tx *bolt.Tx) error {

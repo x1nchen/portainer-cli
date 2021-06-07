@@ -22,6 +22,7 @@ type PortainerClient struct {
 	PClient *portainer.APIClient
 }
 
+// NewPortainerClient
 // TODO options style DI
 func NewPortainerClient(host string, jwtToken string) *PortainerClient {
 	portainerCfg := &portainer.Configuration{
