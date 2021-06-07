@@ -153,9 +153,7 @@ func initAuthorizedManager(cmd *cobra.Command, args []string) error {
 	}
 
 	// TODO validate token
-	manager = initManager(store, pclient,registryClient,  cmd)
+	manager = initManager(store, pclient, registryClient, cmd)
 
 	return nil
 }
-
-

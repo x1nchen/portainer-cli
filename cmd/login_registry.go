@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	RegistryUser     string
-	RegistryPassword string
+	RegistryUser          string
+	RegistryPassword      string
 	RegistryServerAddress string
 )
 

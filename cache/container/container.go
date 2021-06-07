@@ -180,7 +180,7 @@ func (service *Service) SyncEndpointContainer(
 		return err
 	}
 
-	if err = service.DeleteContainerInIDBucket(ctx, containerIDList...);err != nil {
+	if err = service.DeleteContainerInIDBucket(ctx, containerIDList...); err != nil {
 		return err
 	}
 
@@ -188,7 +188,7 @@ func (service *Service) SyncEndpointContainer(
 		return err
 	}
 
-	return  nil
+	return nil
 }
 
 func (service *Service) DeleteContainerInIDBucket(ctx context.Context, idList ...string) error {

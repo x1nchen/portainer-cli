@@ -26,7 +26,7 @@ func NewClient(serverAddr, user, password string) (*Client, error) {
 	var endpoint = serverAddr
 	if !strings.HasPrefix(serverAddr, "https") &&
 		!strings.HasPrefix(serverAddr, "http") {
-		endpoint = "https://" + serverAddr + "/api"// TODO need carefully handle the trailing slash
+		endpoint = "https://" + serverAddr + "/api" // TODO need carefully handle the trailing slash
 	}
 
 	registryClient, err := apiv1.NewRESTClientForHost(

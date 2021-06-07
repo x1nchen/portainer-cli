@@ -5,9 +5,9 @@ import (
 )
 
 var (
-	Repo = ""
-	Branch = ""
-	Commit = ""
+	Repo    = ""
+	Branch  = ""
+	Commit  = ""
 	Version = ""
 )
 

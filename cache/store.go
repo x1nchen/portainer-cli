@@ -45,9 +45,9 @@ func NewBoltStore(datadir string, host string) (*Store, error) {
 	}
 
 	s := &Store{
-		host: host,
+		host:   host,
 		DBName: dbName,
-		bdb:  db,
+		bdb:    db,
 	}
 
 	err = s.initServices()

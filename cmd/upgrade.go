@@ -181,7 +181,7 @@ func GetContainerSpec(instanceAnswer string) (containerID, endpointName, imageNa
 		containerID, endpointName, imageName = specs[0], specs[1], specs[2]
 		return
 	case 4:
-		containerID, endpointName, imageName, state  = specs[0], specs[1], specs[2], specs[3]
+		containerID, endpointName, imageName, state = specs[0], specs[1], specs[2], specs[3]
 		return
 	}
 	return

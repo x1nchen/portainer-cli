@@ -199,12 +199,11 @@ func (c *Manager) UpgradeService(
 	// change container image
 	containerDetail.Config.Image = targetFullImageName
 	containerConfig := model.ContainerConfigWrapper{
-		Config:           containerDetail.Config,
-		HostConfig:       containerDetail.HostConfig,
+		Config:     containerDetail.Config,
+		HostConfig: containerDetail.HostConfig,
 		NetworkingConfig: &network.NetworkingConfig{
 			EndpointsConfig: containerDetail.NetworkSettings.Networks},
 	}
-
 
 	// 4 create container
 	newContainer, _, err := manager.pclient.PClient.DockerApi.CreateContainer(
@@ -270,7 +269,6 @@ func SplitFullImageName(name string) (imageName, imageTag string) {
 	imageTag = image[1]
 	return
 }
-
 
 // SplitFullRegistryImageName
 // split dockerRegistryHost/imageShortName/imageTag into each piece
