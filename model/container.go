@@ -51,6 +51,7 @@ func (c ContainerExtend) KeyWithContainerID() string {
 }
 
 // RegistryUser is dockerhub credentials
+// ref https://docs.docker.com/engine/api/v1.30/#section/Authentication
 type RegistryUser struct {
 	Username      string `json:"username"`
 	Password      string `json:"password"`

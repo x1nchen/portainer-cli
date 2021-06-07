@@ -38,7 +38,7 @@ func loginRegistry(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	registryClient, err := dockerhub.NewClient(RegistryServerAddress, RegistryUser, RegistryPassword)
+	registryClient, err := dockerhub.NewClient(registryURL.Path, RegistryUser, RegistryPassword)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func loginRegistry(cmd *cobra.Command, args []string) error {
 		Username:      RegistryUser,
 		Password:      RegistryPassword,
 		Email:         "",
-		ServerAddress: registryURL.Host,
+		ServerAddress: registryURL.Path,
 	}
 
 	if err = manager.store.RegistryService.UpdateUser(&user); err != nil {

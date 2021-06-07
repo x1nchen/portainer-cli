@@ -3,16 +3,18 @@ package dockerhub
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/mittwald/goharbor-client/v3/apiv1"
 	goharbormodel "github.com/mittwald/goharbor-client/v3/apiv1/model"
 )
 
 type Client struct {
+	// serverAddr is for concatenate the api path for request
 	serverAddr string
-	user          string
-	password      string
-	restClient    *apiv1.RESTClient
+	user       string
+	password   string
+	restClient *apiv1.RESTClient
 }
 
 // ServerAddr server address
@@ -21,13 +23,15 @@ func (c *Client) ServerAddr() string {
 }
 
 func NewClient(serverAddr, user, password string) (*Client, error) {
-	// if !strings.HasPrefix(serverAddr, "https") &&
-	// 	!strings.HasPrefix(serverAddr, "http") {
-	// 	serverAddr = "https:" + serverAddr + "/api" // TODO need carefully handle the trailing slash
-	// }
+	var endpoint = serverAddr
+	if !strings.HasPrefix(serverAddr, "https") &&
+		!strings.HasPrefix(serverAddr, "http") {
+		endpoint = "https://" + serverAddr + "/api"// TODO need carefully handle the trailing slash
+	}
 
 	registryClient, err := apiv1.NewRESTClientForHost(
-		serverAddr + "/api",
+		// serverAddr+"/api",
+		endpoint,
 		user,
 		password,
 	)
@@ -38,9 +42,9 @@ func NewClient(serverAddr, user, password string) (*Client, error) {
 
 	c := &Client{
 		serverAddr: serverAddr,
-		user:          user,
-		password:      password,
-		restClient:    registryClient,
+		user:       user,
+		password:   password,
+		restClient: registryClient,
 	}
 
 	return c, nil
@@ -57,7 +61,7 @@ func (c *Client) Auth(ctx context.Context) error {
 	return nil
 }
 
-func (c *Client) FindImageTagList(ctx context.Context, imageShortName string) ([]*goharbormodel.DetailedTag ,error) {
+func (c *Client) FindImageTagList(ctx context.Context, imageShortName string) ([]*goharbormodel.DetailedTag, error) {
 	tags, err := c.restClient.GetRepositoryTags(ctx, imageShortName)
 	if err != nil {
 		return nil, err

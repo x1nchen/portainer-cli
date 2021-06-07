@@ -146,11 +146,6 @@ func initAuthorizedManager(cmd *cobra.Command, args []string) error {
 			return nil
 		}
 
-		if !strings.HasPrefix(user.ServerAddress, "http") &&
-			!strings.HasPrefix(user.ServerAddress, "https") {
-			user.ServerAddress = "https://" + user.ServerAddress
-		}
-
 		registryClient, err = dockerhub.NewClient(user.ServerAddress, user.Username, user.Password)
 		if err != nil {
 			return err
