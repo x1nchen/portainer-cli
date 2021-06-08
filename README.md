@@ -63,7 +63,18 @@ GO111MODULE="on" go get -v github.com/x1nchen/portainer-cli
 
 #### Homebrew
 
-Install: `brew install github/x1nchen/portainer-cli`
+Install:
 
-Upgrade: `brew upgrade portainer-cli`
+```bash
+brew tap x1nchen/tap
+brew install portainer-cli
+```
+
+
+Upgrade: 
+
+```bash
+brew upgrade portainer-cli
+```
+
 
