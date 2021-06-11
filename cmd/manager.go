@@ -81,6 +81,8 @@ func (c *Manager) SyncData() error {
 	// traverse all endpoints
 	// 1. get the container in current endpoint
 	// 2. add current endpoint to batch
+
+	updateTime := time.Now()
 	for _, ep := range eps {
 		cons, err := c.pclient.ListContainer(ctx, int(ep.Id))
 		if err != nil {
@@ -92,6 +94,7 @@ func (c *Manager) SyncData() error {
 				EndpointId:      int(ep.Id),
 				EndpointName:    ep.Name,
 				DockerContainer: con,
+				UpdateTime:      updateTime,
 			})
 		}
 		// console log
@@ -238,12 +241,15 @@ func (c *Manager) UpgradeService(
 		c.cmd.PrintErr(err)
 		return err
 	}
+
+	updateTime := time.Now()
 	endpointContainerList := make([]climodel.ContainerExtend, 0, len(cons))
 	for _, con := range cons {
 		endpointContainerList = append(endpointContainerList, climodel.ContainerExtend{
 			EndpointId:      oldContainer.EndpointId,
 			EndpointName:    oldContainer.EndpointName,
 			DockerContainer: con,
+			UpdateTime:      updateTime,
 		})
 	}
 

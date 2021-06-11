@@ -38,12 +38,20 @@ func search(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	template := genOutTemplate(containers)
-	title := fmt.Sprintf(template, "NAME", "TAG", "NODE", "STATE", "IMAGE")
+	title := fmt.Sprintf(template, "NAME", "TAG", "NODE", "STATE", "UPDATE", "IMAGE")
 	cmd.Println(au.White(title))
 	for _, container := range containers {
 		imageName, imageTag := SplitFullImageName(container.Image)
-		outMessage := fmt.Sprintf(template, container.Names[0][1:],
-			imageTag, container.EndpointName, container.State, imageName)
+		outMessage := fmt.Sprintf(
+			template,
+			container.Names[0][1:],
+			imageTag,
+			container.EndpointName,
+			container.State,
+			container.UpdateTimeStr(),
+			imageName,
+		)
+
 		if container.State == "running" { // TODO const
 			cmd.Println(au.Green(outMessage))
 		}
@@ -56,7 +64,7 @@ func search(cmd *cobra.Command, args []string) error {
 
 // get the longest field to generate template
 func genOutTemplate(list []climodel.ContainerExtend) string {
-	var nameLen, tagLen, nodeLen, stateLen, imageLen int
+	var nameLen, tagLen, nodeLen, stateLen, imageLen, updateTimeLen int
 	for _, v := range list {
 		imageName, imageTag := SplitFullImageName(v.Image)
 		if len(v.Names[0][1:]) > nameLen {
@@ -64,6 +72,9 @@ func genOutTemplate(list []climodel.ContainerExtend) string {
 		}
 		if len(imageName) > imageLen {
 			imageLen = len(imageName)
+		}
+		if len(v.UpdateTimeStr()) > updateTimeLen {
+			updateTimeLen = len(v.UpdateTimeStr())
 		}
 		if len(imageTag) > tagLen {
 			tagLen = len(imageTag)
@@ -80,6 +91,7 @@ func genOutTemplate(list []climodel.ContainerExtend) string {
 		"%-", tagLen, "s ",
 		"%-", nodeLen, "s ",
 		"%-", stateLen, "s ",
+		"%-", updateTimeLen, "s ",
 		"%-", imageLen, "s ",
 	)
 }

@@ -3,14 +3,21 @@ package model
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/x1nchen/portainer/model"
+)
+
+const (
+	FormatDayLayoutDetail = "2006-01-02 15:04:05"
 )
 
 type ContainerExtend struct {
 	EndpointId   int    `json:"endpoint_id"`
 	EndpointName string `json:"endpoit_name"`
 	model.DockerContainer
+	// update time for db record
+	UpdateTime time.Time `json:"update_time"`
 }
 
 // KeyWithEndpoint
@@ -48,6 +55,10 @@ func (c ContainerExtend) ContainerName() string {
 
 func (c ContainerExtend) KeyWithContainerID() string {
 	return c.ID
+}
+
+func (c ContainerExtend) UpdateTimeStr() string {
+	return c.UpdateTime.Format(FormatDayLayoutDetail)
 }
 
 // RegistryUser is dockerhub credentials
