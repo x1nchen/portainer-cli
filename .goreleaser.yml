@@ -1,0 +1,21 @@
+env:
+  - GO111MODULE=on
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - -X github.com/x1nchen/portainer-cli/cmd.Repo={{ .GitURL }} -X github.com/x1nchen/portainer-cli/cmd.Branch={{ .Branch }} -X github.com/x1nchen/portainer-cli/cmd.Commit={{ .ShortCommit }} -X github.com/x1nchen/portainer-cli/cmd.Version={{ .Version }}
+checksum:
+  name_template: '{{ .ProjectName }}_checksums.txt'
