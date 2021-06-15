@@ -61,7 +61,7 @@ func Execute() {
 	err := rootCmd.Execute()
 	switch perr.Cause(err) {
 	case pclierr.ErrRegistryAuthNotFound:
-		rootCmd.Println("registry auth not found. Run login-registry first")
+		rootCmd.Println("Error: registry auth not found. Run login-registry first")
 	default:
 		rootCmd.Println(err)
 		os.Exit(-1)
