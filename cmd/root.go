@@ -9,6 +9,7 @@ import (
 
 	"github.com/x1nchen/portainer-cli/client"
 	"github.com/x1nchen/portainer-cli/dockerhub"
+	pclierr "github.com/x1nchen/portainer-cli/err"
 
 	perr "github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -57,7 +58,11 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	err := rootCmd.Execute()
+	switch perr.Cause(err) {
+	case pclierr.ErrRegistryAuthNotFound:
+		rootCmd.Println("Error: registry auth not found. Run login-registry first")
+	default:
 		rootCmd.Println(err)
 		os.Exit(-1)
 	}
@@ -133,6 +138,9 @@ func initAuthorizedManager(cmd *cobra.Command, args []string) error {
 	case "deploy", "upgrade": // deploy and upgrade command need registry client initiated
 		user, err := store.RegistryService.GetUser()
 		if err != nil {
+			if perr.Cause(err) == pclierr.ErrObjectNotFound {
+				return pclierr.ErrRegistryAuthNotFound
+			}
 			return err
 		}
 

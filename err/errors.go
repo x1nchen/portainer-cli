@@ -6,6 +6,10 @@ const (
 	ErrResourceAccessDenied   = Error("Access denied to resource")
 	ErrAuthorizationRequired  = Error("Authorization required for this operation")
 	ErrObjectNotFound         = Error("Object not found inside the database")
+
+
+	/* dockerhub auth */
+	ErrRegistryAuthNotFound   = Error("registry user not found")
 	ErrMissingSecurityContext = Error("Unable to find security details in request context")
 )
 
