@@ -7,7 +7,7 @@ PACKAGE_LIST  := go list ./...
 PACKAGE_DIRECTORIES := $(PACKAGE_LIST)
 FILES     := $$(find $$($(PACKAGE_DIRECTORIES)) -name "*.go")
 
-REPO = $(shell if [ $${GITHUB_REPOSITORY+x} ]; then echo $$GITHUB_REPOSITORY; else basename `git rev-parse --show-toplevel`; fi)
+REPO = $(shell if [ $${CI_REPOSITORY+x} ]; then echo $$CI_REPOSITORY; else basename `git rev-parse --show-toplevel`; fi)
 BRANCH = $(shell if [ $${CI_HEAD_REF+x} ]; then echo $$CI_HEAD_REF; else basename `git symbolic-ref HEAD`; fi)
 COMMIT = $(shell if [ $${CI_SHA_SHORT+x} ]; then echo $$CI_SHA_SHORT; else git rev-parse --short HEAD; fi)
 VERSION = $(shell if [ $${CI_REF_NAME+x} ]; then echo $$CI_REF_NAME; else basename `git tag --sort=-version:refname | head -n 1`; fi)
