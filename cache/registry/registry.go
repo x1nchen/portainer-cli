@@ -1,6 +1,7 @@
 package registry
 
 import (
+	perr "github.com/pkg/errors"
 	"github.com/x1nchen/portainer-cli/cache/internal"
 	"github.com/x1nchen/portainer-cli/model"
 	bolt "go.etcd.io/bbolt"
@@ -41,7 +42,7 @@ func (service *Service) GetUser() (*model.RegistryUser, error) {
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, perr.Wrap(err, "registry cache get user")
 	}
 
 	return &user, nil
