@@ -30,7 +30,8 @@ func NewPortainerClient(host string, jwtToken string) *PortainerClient {
 		HTTPClient: http.DefaultClient,
 	}
 
-	portainerCfg.HTTPClient.Timeout = 3 * time.Second
+	// create image should wait for more than 1 minute
+	portainerCfg.HTTPClient.Timeout = 60 * time.Second
 
 	c := portainer.NewAPIClient(portainerCfg)
 	c.JwtToken = jwtToken

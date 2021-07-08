@@ -12,7 +12,7 @@ func TestDockerhubClient(t *testing.T) {
 		t.Skip("skip test")
 	}
 
-	c, err := NewClient("https://dockerhub.com", "test", "test")
+	c, err := NewClient("dockerhub.com", "test", "test")
 	require.NoError(t, err)
 
 	t.Run("Auth", func(t *testing.T) {

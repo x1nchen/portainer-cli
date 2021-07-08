@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -122,11 +123,15 @@ func upgrade(cmd *cobra.Command, args []string) error {
 
 	var imageTagAnswer string
 
+	sort.Slice(tagList, func(i, j int) bool {
+		return tagList[i].Created > tagList[j].Created
+	})
+
 	// select image tag
 	{
 		var imageTagOptions []string
 		for _, tagModel := range tagList {
-			option := fmt.Sprintf("%s:%s", imageShortName, tagModel.Name)
+			option := fmt.Sprintf("%s:%s %s", imageShortName, tagModel.Name, tagModel.Created)
 			imageTagOptions = append(imageTagOptions, option)
 		}
 
@@ -149,6 +154,8 @@ func upgrade(cmd *cobra.Command, args []string) error {
 		cmd.Println("You selected ", imageTagAnswer)
 	}
 
+	imageTag := strings.Split(imageTagAnswer, " ")[0]
+
 	for _, instanceAnswer := range instanceAnswers {
 		instanceID := strings.Split(instanceAnswer, " ")[0]
 		container, err := manager.store.ContainerService.GetContainByID(instanceID)
@@ -156,7 +163,8 @@ func upgrade(cmd *cobra.Command, args []string) error {
 			cmd.Printf("find service container error %s \n", instanceAnswer)
 			continue
 		}
-		if err = manager.UpgradeService(ctx, container.ID, imageTagAnswer); err != nil {
+
+		if err = manager.UpgradeService(ctx, container.ID, imageTag); err != nil {
 			cmd.Printf("upgrade service container error %s \n", instanceAnswer)
 			continue
 		}
