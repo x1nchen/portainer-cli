@@ -173,8 +173,9 @@ func (c *Manager) UpgradeService(
 	registryAuthToken := base64.StdEncoding.EncodeToString(data)
 
 	c.cmd.Println("target image name", targetFullImageName)
+	imageCtx, _ :=  context.WithTimeout(ctx, time.Second * 60)
 	_, err = c.pclient.PClient.DockerApi.CreateImage(
-		ctx,
+		imageCtx,
 		registryAuthToken,
 		int32(oldContainer.EndpointId),
 		c.registryClient.ServerAddr()+"/"+targetImageShortName,
